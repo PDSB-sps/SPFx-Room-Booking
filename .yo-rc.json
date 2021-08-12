@@ -2,7 +2,7 @@
   "@microsoft/generator-sharepoint": {
     "isCreatingSolution": true,
     "environment": "spo",
-    "version": "1.11.0",
+    "version": "1.12.1",
     "libraryName": "spfx-room-booking",
     "libraryId": "84fd9f85-a309-4b1e-98fd-db8ae45e1323",
     "packageManager": "npm",
