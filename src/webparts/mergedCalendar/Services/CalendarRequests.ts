@@ -26,40 +26,47 @@ const resolveCalUrl = (context: WebPartContext, calType:string, calUrl:string, c
             resolvedCalUrl = context.pageContext.web.absoluteUrl + restApiUrl + restApiParams;
             break;
         case "External":
-            resolvedCalUrl = azurePeelSchoolsUrl + calUrl.substring(calUrl.indexOf('.org/') + 4, calUrl.length) + restApiUrl + restApiParams;
+            resolvedCalUrl = azurePeelSchoolsUrl + calUrl.substring(calUrl.indexOf('.org/') + 12, calUrl.length) + restApiUrl + restApiParams;
             break;
     }
     return resolvedCalUrl;
 };
 
-const getGraphCals = (context: WebPartContext, calSettings:{CalType:string, Title:string, CalName:string, CalURL:string}) : Promise <{}[]> => {
-    
-    let graphUrl :string = calSettings.CalURL.substring(32, calSettings.CalURL.length),
-        calEvents : {}[] = [];
-
-    return new Promise <{}[]> (async(resolve, reject)=>{
-        context.msGraphClientFactory
-            .getClient()
-            .then((client :MSGraphClient)=>{
-                client
-                    .api(graphUrl)
-                    .get((error, response: any, rawResponse?: any)=>{
-                        response.value.map((result:any)=>{
-                            calEvents.push({
-                                id: result.id,
-                                title: result.subject,
-                                // start: formatStartDate(result.start.dateTime),
-                                // end: formatStartDate(result.end.dateTime),
-                                start: result.start.dateTime,
-                                end: result.end.dateTime,
-                                _location: result.location.displayName,
-                                _body: result.body.content
-                            });
-                        });
-                        resolve(calEvents);
-                    });
-            });
-    });
+const getGraphCals = (context: WebPartContext, calSettings:{CalType:string, Title:string, CalName:string, CalURL:string}) : Promise <{}[]> => {	
+    	
+    let graphUrl :string = calSettings.CalURL.substring(32, calSettings.CalURL.length),	
+        calEvents : {}[] = [];	
+    return new Promise <{}[]> (async(resolve, reject)=>{	
+        context.msGraphClientFactory	
+            .getClient()	
+            .then((client :MSGraphClient)=>{	
+                client	
+                    .api(graphUrl)	
+                    .header('Prefer','outlook.timezone="Eastern Standard Time"')	
+                    .get((error, response: any, rawResponse?: any)=>{	
+                        if(error){	
+                            alert("Calendar Graph Error - " + calSettings.Title);	
+                        }	
+                        if(response){	
+                            response.value.map((result:any)=>{	
+                                calEvents.push({	
+                                    id: result.id,	
+                                    title: result.subject,	
+                                    // start: formatStartDate(result.start.dateTime),	
+                                    // end: formatStartDate(result.end.dateTime),	
+                                    start: result.start.dateTime,	
+                                    end: result.end.dateTime,	
+                                    _location: result.location.displayName,	
+                                    _body: result.body.content	
+                                });	
+                            });	
+                        }	
+                        resolve(calEvents);	
+                    });	
+            }, (error)=>{	
+                alert(error);	
+            });	
+    });	
 };
 
 export const addToMyGraphCal = async (context: WebPartContext) =>{
@@ -154,29 +161,33 @@ export const getDefaultCals = async (context: WebPartContext, calSettings:{CalTy
         }
     };
 
-    const _data = await context.httpClient.get(calUrl, HttpClient.configurations.v1, myOptions);
-        
-    if (_data.ok){
-        const calResult = await _data.json();
-        if(calResult){
-            calResult.d.results.map((result:any)=>{
-                calEvents.push({
-                    id: result.ID,
-                    title: result.Title,
-                    start: result.fAllDayEvent ? formatStartDate(result.EventDate) : result.EventDate,
-                    end: result.fAllDayEvent ? formatEndDate(result.EndDate) : result.EndDate,
-                    allDay: result.fAllDayEvent,
-                    _location: result.Location,
-                    _body: result.Description,
-                    recurr: result.fRecurrence,
-                    recurrData: result.RecurrenceData,
-                    rrule: result.fRecurrence ? parseRecurrentEvent(result.RecurrenceData, formatStartDate(result.EventDate), formatEndDate(result.EndDate)) : null
+    try{
+        const _data = await context.httpClient.get(calUrl, HttpClient.configurations.v1, myOptions);
+            
+        if (_data.ok){
+            const calResult = await _data.json();
+            if(calResult){
+                calResult.d.results.map((result:any)=>{
+                    calEvents.push({
+                        id: result.ID,
+                        title: result.Title,
+                        start: result.fAllDayEvent ? formatStartDate(result.EventDate) : result.EventDate,
+                        end: result.fAllDayEvent ? formatEndDate(result.EndDate) : result.EndDate,
+                        allDay: result.fAllDayEvent,
+                        _location: result.Location,
+                        _body: result.Description,
+                        recurr: result.fRecurrence,
+                        recurrData: result.RecurrenceData,
+                        rrule: result.fRecurrence ? parseRecurrentEvent(result.RecurrenceData, formatStartDate(result.EventDate), formatEndDate(result.EndDate)) : null
+                    });
                 });
-            });
+            }
+        }else{
+            alert("Calendar Error: " + calSettings.Title + ' - ' + _data.statusText);
+            return [];
         }
-    }else{
-        //alert("Calendar Error");
-        return [];
+    } catch(error){
+        alert("Calendar Error for external calendars - " + error);
     }
         
     return calEvents;
@@ -192,41 +203,42 @@ export const getRoomsCal = async (context: WebPartContext, calSettings:{CalType:
         }
     };
 
-    const _data = await context.httpClient.get(calUrl, HttpClient.configurations.v1, myOptions);
-        
-    if (_data.ok){
-        const calResult = await _data.json();
-
-        // console.log("calResult", calResult);
-
-        if(calResult){
-            calResult.d.results.map((result:any)=>{
-                calEvents.push({
-                    id: result.ID,
-                    title: result.Title,
-                    start: result.fAllDayEvent ? formatStartDate(result.EventDate) : result.EventDate,
-                    end: result.fAllDayEvent ? formatEndDate(result.EndDate) : result.EndDate,
-                    allDay: result.fAllDayEvent,
-                    _location: result.Location,
-                    _body: result.Description,
-                    recurr: result.fRecurrence,
-                    recurrData: result.RecurrenceData,
-                    rrule: result.fRecurrence ? parseRecurrentEvent(result.RecurrenceData, formatStartDate(result.EventDate), formatEndDate(result.EndDate)) : null,
-                    color: result.RoomName.ColorCalculated,
-                    roomId: result.RoomName.ID,
-                    roomTitle: result.RoomName.Title,
-                    className: roomId ? (roomId == parseInt(result.RoomName.ID) ? 'roomEvent roomID-' + result.RoomName.ID : 'roomEventHidden roomEvent roomID-' + result.RoomName.ID) : 'roomEvent roomID-' + result.RoomName.ID,
-                    status: result.Status,
-                    period: result.Periods.Title,
-                    periodId: result.Periods.ID,
-                    addToCal: result.AddToMyCal
+    try{
+        const _data = await context.httpClient.get(calUrl, HttpClient.configurations.v1, myOptions);
+            
+        if (_data.ok){
+            const calResult = await _data.json();
+            // console.log("calResult", calResult);
+            if(calResult){
+                calResult.d.results.map((result:any)=>{
+                    calEvents.push({
+                        id: result.ID,
+                        title: result.Title,
+                        start: result.fAllDayEvent ? formatStartDate(result.EventDate) : result.EventDate,
+                        end: result.fAllDayEvent ? formatEndDate(result.EndDate) : result.EndDate,
+                        allDay: result.fAllDayEvent,
+                        _location: result.Location,
+                        _body: result.Description,
+                        recurr: result.fRecurrence,
+                        recurrData: result.RecurrenceData,
+                        rrule: result.fRecurrence ? parseRecurrentEvent(result.RecurrenceData, formatStartDate(result.EventDate), formatEndDate(result.EndDate)) : null,
+                        color: result.RoomName.ColorCalculated,
+                        roomId: result.RoomName.ID,
+                        roomTitle: result.RoomName.Title,
+                        className: roomId ? (roomId == parseInt(result.RoomName.ID) ? 'roomEvent roomID-' + result.RoomName.ID : 'roomEventHidden roomEvent roomID-' + result.RoomName.ID) : 'roomEvent roomID-' + result.RoomName.ID,
+                        status: result.Status,
+                        period: result.Periods.Title,
+                        periodId: result.Periods.ID,
+                        addToCal: result.AddToMyCal
+                    });
                 });
-            });
-            //console.log("calEvents", calEvents);
+            }
+        }else{
+            alert("Calendar Error: " + calSettings.Title + ' - ' + _data.statusText);
+            return [];
         }
-    }else{
-        //alert("Calendar Error");
-        return [];
+    } catch(error){
+        alert("Calendar Error for external calendars - " + error);
     }
         
     return calEvents;
@@ -241,6 +253,7 @@ export const getCalsData = (context: WebPartContext, calSettings:{CalType:string
         return getDefaultCals(context, calSettings);
     }
 };
+
 
 export const getMySchoolCalGUID = async (context: WebPartContext, calSettingsListName: string) =>{
     const calSettingsRestUrl = `${context.pageContext.web.absoluteUrl}/_api/web/lists/GetByTitle('${calSettingsListName}')/items?$filter=CalType eq 'My School'&$select=CalName`;
