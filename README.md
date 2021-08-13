@@ -20,6 +20,15 @@ A SPFx Merged Calendar React web-part. Aggregates different types of calendars; 
 - Periods list 
 - Guidelines list
 
+
+# Screenshots
+- Room Booking: Calendar, Rooms, Reservation form/panel, Booking management (Room, Period, Guideline) <br/>
+![alt Calendar](https://github.com/Maya-Mostafa/SPFx-Room-Booking-/blob/main/RoomBooking.png) <br/>
+- Booking Details (Add, Edit, Delete) <br/>
+![alt Legend](https://github.com/Maya-Mostafa/SPFx-Room-Booking-/blob/main/RoomBookingDetails.png) <br/>
+- Booking Management <br/>
+![alt Settings](https://github.com/Maya-Mostafa/SPFx-Room-Booking-/blob/main/AddEditRoom.png) <br/>
+
 # Libraries 
 `npm install rrule`<br/>
 `npm install --save @fullcalendar/react @fullcalendar/rrule @fullcalendar/daygrid @fullcalendar/timegrid @fullcalendar/interaction`<br/>
@@ -60,3 +69,6 @@ https://pnp.github.io/sp-dev-fx-controls-react/controls/IFrameDialog/
 
 `npm i @pnp/sp` <br/>
 `npm install @pnp/spfx-controls-react --save --save-exact` <br/>
+
+
+
