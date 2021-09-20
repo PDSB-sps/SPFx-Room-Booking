@@ -58,7 +58,8 @@ const getGraphCals = (context: WebPartContext, calSettings:{CalType:string, Titl
                                     end: result.end.dateTime,	
                                     _location: result.location.displayName,	
                                     _body: result.body.content,
-                                    className: "eventHidden"	
+                                    className: "eventHidden",
+                                    allDay: result.isAllDay
                                 });	
                             });	
                         }	
