@@ -127,6 +127,20 @@
     }
   }
 
+  .legendTop{ 
+    margin-bottom: 20px;
+    border-bottom: 1px solid #ddd;
+  }
+  .legendHz{
+    ul{
+      display: flex;
+      flex-wrap: wrap;
+    }
+    li{
+      margin: 0 15px 5px 0;
+    }
+  }
+
   .calendarLegend{
     ul{
       padding: 0 5px;

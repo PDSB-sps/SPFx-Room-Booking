@@ -1,4 +1,5 @@
 export interface ILegendProps{
     calSettings: any;
-    rooms: any;
+    legendChked: boolean;
+    onLegendChkChange: any;
 }

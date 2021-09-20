@@ -9,7 +9,7 @@ import {useBoolean} from '@fluentui/react-hooks';
 
 import {CalendarOperations} from '../Services/CalendarOperations';
 import {updateCalSettings} from '../Services/CalendarSettingsOps';
-import {addToMyGraphCal, getMySchoolCalGUID} from '../Services/CalendarRequests';
+import {addToMyGraphCal, getMySchoolCalGUID, reRenderCalendars} from '../Services/CalendarRequests';
 import {formatEvDetails} from '../Services/EventFormat';
 import {setWpData} from '../Services/WpProperties';
 import {getRooms, getPeriods, getLocationGroup, getGuidelines, getRoomsCalendarName, addEvent, deleteItem, updateEvent, isEventCreator} from '../Services/RoomOperations';
@@ -29,6 +29,7 @@ import IRoomsManage from './IRoomsManage/IRoomsManage';
 import toast, { Toaster } from 'react-hot-toast';
 import { IFrameDialog } from "@pnp/spfx-controls-react/lib/IFrameDialog";
 import { PrimaryButton } from 'office-ui-fabric-react';
+import ILegendRooms from './ILegendRooms/ILegendRooms';
 
 
 export default function MergedCalendar (props:IMergedCalendarProps) {
@@ -43,6 +44,8 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
   const [isDataLoading, { toggle: toggleIsDataLoading }] = useBoolean(false);
   const [showWeekends, { toggle: toggleshowWeekends }] = useBoolean(props.showWeekends);
   const [listGUID, setListGUID] = React.useState('');
+  const [calVisibility, setCalVisibility] = React.useState <{calId: string, calChk: boolean}>({calId: null, calChk: null});
+  const [legendChked, setLegendChked] = React.useState(true);
 
   const [rooms, setRooms] = React.useState([]);
   const [roomId, setRoomId] = React.useState(null);
@@ -100,6 +103,10 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
       setLocationGroup(results);
     });
   }, []);
+
+  React.useEffect(()=>{
+    setEventSources(reRenderCalendars(eventSources, calVisibility));
+  },[calVisibility]);
 
   const chkHandleChange = (newCalSettings:{})=>{    
     return (ev: any, checked: boolean) => { 
@@ -408,6 +415,13 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
     setRoomId(roomIdParam);
   };
 
+  const onLegendChkChange = (calId: string) =>{
+    return(ev: any, checked: boolean) =>{
+        setCalVisibility({calId: calId, calChk: checked});
+        // setLegendChked(checked);
+    };
+  };
+
   return(
     <div className={styles.mergedCalendar}>
 
@@ -490,6 +504,13 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
             </MessageBar>
           </div>
         }
+        <div className={`${styles.legendTop} ${styles.legendHz}`}>
+          <ILegend 
+            calSettings={calSettings} 
+            onLegendChkChange={onLegendChkChange}
+            legendChked = {legendChked}
+          />
+        </div>
         <ICalendar 
           // eventSources={filteredEventSources} 
           eventSources={eventSources} 
@@ -499,7 +520,7 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
           context={props.context}
           listGUID = {listGUID}/>
 
-        <ILegend 
+        <ILegendRooms 
           calSettings={calSettings} 
           rooms={filteredRooms}
         />
