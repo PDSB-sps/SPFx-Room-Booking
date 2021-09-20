@@ -93,11 +93,15 @@
         border-radius: 5px;
         display: flex;
         flex-wrap: nowrap;
-        padding: 0 0 10px 0;
+        padding: 0 0 5px 0;
         justify-content: flex-end;
         button{
-            padding: 0;
-            height: 50%;
+            background: #fff;
+            border-radius: 50%;
+            margin-right: 5px;
+            height: 30px;
+            width: 30px;
+            padding-left: 2px;
             &:hover{
                 background: #eee;
             }
