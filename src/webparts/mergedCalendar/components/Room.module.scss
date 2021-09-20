@@ -24,7 +24,8 @@
     .roomCardDetails{
         display: flex;
         flex-wrap: nowrap;
-        margin-top: 10px;
+        padding-top: 10px;
+        background: #f7f7f7;
     }
     h3{
         margin: 0;
@@ -55,6 +56,7 @@
             // margin-top: 15px;       
             .roomActBtn{
                 height: 30px;
+                text-align: left;
             }
         }
     }
@@ -85,12 +87,14 @@
         // height: 80%;
         // border-left: 1px solid #ddd;
         // border-radius: 5px;
-        width: 28px;
+        // width: 28px;
         background: #f7f7f7;
-        border-left: 1px solid #ddd;
+        // border-left: 1px solid #ddd;
         border-radius: 5px;
         display: flex;
-        flex-wrap: wrap;
+        flex-wrap: nowrap;
+        padding: 0 0 10px 0;
+        justify-content: flex-end;
         button{
             padding: 0;
             height: 50%;
@@ -99,7 +103,7 @@
             }
         }
         button:first-child{
-            border-bottom: 1px solid #ddd;
+            // border-bottom: 1px solid #ddd;
         }
     }
 }
@@ -319,6 +323,15 @@
         i{
             font-size: 12px;
             padding-right: 5px;
+        }
+    }
+}
+
+
+@media only screen and (max-width: 955px) {
+    .roomCard{
+        img{
+            height: 65px;
         }
     }
 }
