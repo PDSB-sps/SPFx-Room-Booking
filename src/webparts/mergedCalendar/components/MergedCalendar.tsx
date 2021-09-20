@@ -337,18 +337,27 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
     });
   };
 
-  
   //Rooms, Periods, Guidelines Management
-  const [iframeUrl, setIframeUrl] = React.useState('');
-  const [iframeShow, setIframeShow] = React.useState(false);
-  const [iframeState, setIframeState] = React.useState('Add');
+  const iFrameInitialState : any = {iFrameUrl: '', iFrameShow: false, iFrameState: 'Add'};
+  const iFrameReducer = (state, action) =>{
+    console.log(action);
+    switch (action.type){
+      case "ROOMS_MANAGE":
+        return {iFrameUrl: action.payload.iFrameUrl, iFrameShow: action.payload.iFrameShow, iFrameState: action.payload.iFrameState};
+      case "IFRAME_DISMISS":
+        return {iFrameShow: action.payload.iFrameShow};
+      case "ROOM_EDIT":
+        return {iFrameUrl: action.payload.iFrameUrl, iFrameShow: action.payload.iFrameShow};
+    }
+  };
+  const [iFrameState, iFrameDispatch] = React.useReducer(iFrameReducer, iFrameInitialState);
+
   const onRoomsManage = (newFormUrl: string, roomsManageState: string) =>{
-    setIframeUrl(newFormUrl);
-    setIframeShow(true);
-    setIframeState(roomsManageState);
+    iFrameDispatch({type: "ROOMS_MANAGE", payload: {iFrameUrl: newFormUrl, iFrameShow: true, iFrameState: roomsManageState}});
   };
   const onIFrameDismiss = async (event: React.MouseEvent) => {
-    setIframeShow(false);
+    iFrameDispatch({type: "IFRAME_DISMISS", payload: {iFrameShow: false}});
+
     getRooms(props.context, roomsList).then((results)=>{
       setRooms(results);
       setFilteredRooms(results);
@@ -358,19 +367,13 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
     });
   };
   const onIFrameLoad = async (iframe: any) => {
-    let keepOpen: boolean;
-    if (iframeState === "Add")
-      keepOpen = iframe.contentWindow.location.href.indexOf('Newform.aspx') > 0 || iframe.contentWindow.location.href.indexOf('Editform.aspx') > 0;
-    else
-      keepOpen = iframe.contentWindow.location.href.indexOf('AllItems.aspx') > 0;
-    if (!keepOpen) {
-      onIFrameDismiss(null);
-    }
+    if(iframe.contentWindow.location.href.indexOf('AllItems.aspx') > 0)
+      onIFrameDismiss(null);  
   };
   const onEditRoom = (editedRoomId: any) =>{
     const editRoomUrl = `${props.context.pageContext.web.serverRelativeUrl}/Lists/${roomsList}/Editform.aspx?ID=${editedRoomId}`;
-    setIframeUrl(editRoomUrl);
-    setIframeShow(true);
+    iFrameDispatch({type: "ROOM_EDIT", payload: {iFrameUrl: editRoomUrl, iFrameShow: true}});
+
     getRooms(props.context, roomsList).then((results)=>{
       setRooms(results);
       setFilteredRooms(results);
@@ -447,10 +450,10 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
                 </DialogFooter>
               </Dialog>
               <IFrameDialog 
-                url={iframeUrl}
-                width={iframeState === "Add" ? '40%' : '70%'}
+                url={iFrameState.iFrameUrl}
+                width={iFrameState.iFrameState === "Add" ? '40%' : '70%'}
                 height={'90%'}
-                hidden={!iframeShow}
+                hidden={!iFrameState.iFrameShow}
                 iframeOnLoad={(iframe) => onIFrameLoad(iframe)}
                 onDismiss={(event) => onIFrameDismiss(event)}
                 allowFullScreen = {true}
@@ -465,7 +468,7 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
                 periodsList={props.periodsList}
                 guidelinesList={props.guidelinesList}
                 onRoomsManage={onRoomsManage}
-                iframeState = {iframeState}
+                iframeState = {iFrameState.iFrameState}
               />            
             </React.Fragment>
           }
