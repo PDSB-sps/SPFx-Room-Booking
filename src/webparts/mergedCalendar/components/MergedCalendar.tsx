@@ -7,7 +7,7 @@ import {useBoolean} from '@fluentui/react-hooks';
 
 import {CalendarOperations} from '../Services/CalendarOperations';
 import {updateCalSettings} from '../Services/CalendarSettingsOps';
-import {addToMyGraphCal, getMySchoolCalGUID, reRenderCalendars} from '../Services/CalendarRequests';
+import {addToMyGraphCal, getMySchoolCalGUID, reRenderCalendars, getLegendChksState} from '../Services/CalendarRequests';
 import {formatEvDetails} from '../Services/EventFormat';
 import {setWpData} from '../Services/WpProperties';
 import {getRooms, getPeriods, getLocationGroup, getGuidelines, getRoomsCalendarName, addEvent, deleteItem, updateEvent, isEventCreator} from '../Services/RoomOperations';
@@ -59,7 +59,8 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
   const [guidelines, setGuidelines] = React.useState([]);
   const [isFiltered, { setTrue: showFilterWarning, setFalse: hideFilterWarning }] = useBoolean(false);
   const [roomsCalendar, setRoomsCalendar] = React.useState('Events');
-  
+  const [calsVisibility, setCalsVisibility] = React.useState([]);
+
   const ACTIONS = {
     EVENT_DETAILS_TOGGLE : "event-details-toggle",
     ROOM_DELETE_TOGGLE : "room-delete-toggle",
@@ -122,6 +123,7 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
 
   React.useEffect(()=>{
     setEventSources(reRenderCalendars(eventSources, calVisibility));
+    setCalsVisibility(getLegendChksState(calsVisibility, calVisibility));
   },[calVisibility]);
 
   const chkHandleChange = (newCalSettings:{})=>{    
@@ -306,6 +308,7 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
             const callback = () =>{
               dismissPanelBook();
               popToast('A New Event Booking is successfully added!');
+              // calsVisibility.map(calVis => calVis.calId ? setEventSources(reRenderCalendars(eventSources, calVis)) : '');
             };
             loadLatestCalendars(callback);
           });

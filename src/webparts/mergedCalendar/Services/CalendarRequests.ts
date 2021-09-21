@@ -272,6 +272,16 @@ export const reRenderCalendars = (calEventSources: any, calVisibility: {calId: s
     });
     return newCalEventSources;
 };
+export const getLegendChksState = (calsVisibilityState: any, calVisibility: any) => {
+    const calsVisibilityArr = calsVisibilityState;
+    if (calsVisibilityArr.filter(i => i.calId === calVisibility.calId).length === 0 ){
+        calsVisibilityArr.push(calVisibility);
+    }else{
+        calsVisibilityArr.map(i=> i.calId == calVisibility.calId ? i.calChk = calVisibility.calChk : '' );
+    }
+    console.log("calsVisibilityArr calsVisibilityArr calsVisibilityArr", calsVisibilityArr);
+    return calsVisibilityArr;
+};
 
 export const getMySchoolCalGUID = async (context: WebPartContext, calSettingsListName: string) =>{
     const calSettingsRestUrl = `${context.pageContext.web.absoluteUrl}/_api/web/lists/GetByTitle('${calSettingsListName}')/items?$filter=CalType eq 'My School'&$select=CalName`;
