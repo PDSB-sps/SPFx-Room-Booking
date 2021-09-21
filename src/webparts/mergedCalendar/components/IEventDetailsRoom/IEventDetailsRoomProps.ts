@@ -1,4 +1,4 @@
-export interface IEventDetailsProps{
+export interface IEventDetailsRoomProps{
     Title: string;
     Start?: string;
     End?: string;
@@ -6,5 +6,9 @@ export interface IEventDetailsProps{
     Location?: string;
     Body?: any;
     Recurrence?: string;
+    Period?: string;
+    Status?: string;
+    Room?: string;
+    Color?: string;
     handleAddtoCal: any;
 }
