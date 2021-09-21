@@ -28,7 +28,6 @@ export default function ILegend(props:ILegendProps){
                                     className={'chkboxLegend chkbox_'+value.BgColor}
                                     label={value.Title} 
                                     defaultChecked={false}
-                                    // checked={props.legendChked}
                                     onChange={props.onLegendChkChange(value.Id)} 
                                     onRenderLabel={() => _renderLabelWithLink(value.Title, value.LegendURL)}
                                 />

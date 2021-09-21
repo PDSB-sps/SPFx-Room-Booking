@@ -2,8 +2,6 @@ import * as React from 'react';
 import styles from './MergedCalendar.module.scss';
 import roomStyles from './Room.module.scss';
 import { IMergedCalendarProps } from './IMergedCalendarProps';
-//import { escape } from '@microsoft/sp-lodash-subset';
-
 import {IDropdownOption, DefaultButton, Panel, IComboBox, IComboBoxOption, MessageBar, MessageBarType, MessageBarButton, Link, Dialog, DialogFooter, DialogType} from '@fluentui/react';
 import {useBoolean} from '@fluentui/react-hooks';
 
@@ -40,12 +38,10 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
   const [eventDetails, setEventDetails] = React.useState(null);
 
   const [isOpen, { setTrue: openPanel, setFalse: dismissPanel }] = useBoolean(false);
-  const [hideDialog, { toggle: toggleHideDialog }] = useBoolean(true);
   const [isDataLoading, { toggle: toggleIsDataLoading }] = useBoolean(false);
   const [showWeekends, { toggle: toggleshowWeekends }] = useBoolean(props.showWeekends);
   const [listGUID, setListGUID] = React.useState('');
   const [calVisibility, setCalVisibility] = React.useState <{calId: string, calChk: boolean}>({calId: null, calChk: null});
-  const [legendChked, setLegendChked] = React.useState(true);
 
   const [rooms, setRooms] = React.useState([]);
   const [roomId, setRoomId] = React.useState(null);
@@ -109,7 +105,7 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
     });
   };
 
-  // UseEffect
+  // UseEffect(s)
   React.useEffect(()=>{
     loadLatestCalendars();
     getRooms(props.context, roomsList).then((results)=>{
@@ -151,12 +147,7 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
       toggleIsDataLoading();
     });
   };
-  // const handleDateClick = (arg:any) =>{
-  //   //console.log("arg", arg);
-  //   //console.log(formatEvDetails(arg));
-  //   setEventDetails(formatEvDetails(arg));
-  //   toggleHideDialog();
-  // };
+  
 
   const handleAddtoCal = ()=>{
     addToMyGraphCal(props.context).then((result)=>{
@@ -216,11 +207,8 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
     if(arg.event._def.extendedProps.roomId){
       setBookFormMode('View');
       const evDetails: any = formatEvDetails(arg);
-      // console.log("arg", arg);
-      //console.log("evDetails", evDetails);
       setEventId(evDetails.EventId);
       setRoomInfo(evDetails);
-      // setRoomInfo(evDetails.Room);
       setEventDetailsRoom(evDetails);
       
       isEventCreator(props.context, roomsCalendar, evDetails.EventId).then((v)=>{
@@ -247,7 +235,6 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
     }
     else{
       setEventDetails(formatEvDetails(arg));
-      //toggleHideDialog();
       dialogDispatch({type: ACTIONS.EVENT_DETAILS_TOGGLE});
     }
   };
@@ -414,7 +401,6 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
     deleteItem(props.context, roomsList, roomIdParam).then(()=>{
       const callback = () =>{
         dismissPanelDetails();
-        //toggleHideDialog();
         dialogDispatch({type: ACTIONS.ROOM_DELETE_TOGGLE});
         popToast('The Room is successfully deleted!');   
       };
