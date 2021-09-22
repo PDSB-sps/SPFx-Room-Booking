@@ -7,7 +7,7 @@ import {useBoolean} from '@fluentui/react-hooks';
 
 import {CalendarOperations} from '../Services/CalendarOperations';
 import {updateCalSettings} from '../Services/CalendarSettingsOps';
-import {addToMyGraphCal, getMySchoolCalGUID, reRenderCalendars, getLegendChksState} from '../Services/CalendarRequests';
+import {addToMyGraphCal, getMySchoolCalGUID, reRenderCalendars, getLegendChksState, calsErrs} from '../Services/CalendarRequests';
 import {formatEvDetails} from '../Services/EventFormat';
 import {setWpData} from '../Services/WpProperties';
 import {getRooms, getPeriods, getLocationGroup, getGuidelines, getRoomsCalendarName, addEvent, deleteItem, updateEvent, isEventCreator} from '../Services/RoomOperations';
@@ -61,6 +61,7 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
   const [isFiltered, { setTrue: showFilterWarning, setFalse: hideFilterWarning }] = useBoolean(false);
   const [roomsCalendar, setRoomsCalendar] = React.useState('Events');
   const [calsVisibility, setCalsVisibility] = React.useState([]);
+  const [calMsgErrs, setCalMsgErrs] = React.useState([]);
 
   const ACTIONS = {
     EVENT_DETAILS_TOGGLE : "event-details-toggle",
@@ -116,9 +117,11 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
       setCalSettings(results[0]);
       //setEventSources(results[1]);
       dispatchEventSources({type: ACTIONS.LOAD_EVENTS, payload: results[1] });
-      if (calsVisibility.length > 1)
+      if (calsVisibility.length > 1){
         dispatchEventSources({type: ACTIONS.LOAD_EVENTS_VIS, payload: calsVisibility });
-        toggleIsDataLoading();
+      }
+      toggleIsDataLoading();
+      setCalMsgErrs(calsErrs);
       callback ? callback() : null;
     });
   };
@@ -569,6 +572,17 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
           calSettings={calSettings} 
           rooms={filteredRooms}
         />
+
+      {calMsgErrs.length > 0 &&
+        <MessageBar className={styles.calErrsMsg} messageBarType={MessageBarType.warning}>
+          Warning! Calendar Errors, please check
+          <ul>
+            {calMsgErrs.map((msg)=>{
+              return <li>{msg}</li> ;
+            })}
+          </ul>
+        </MessageBar>
+      }
       </div>
       </div>
       <MessageBar className={roomStyles.helpMsgBar} isMultiline={false}>

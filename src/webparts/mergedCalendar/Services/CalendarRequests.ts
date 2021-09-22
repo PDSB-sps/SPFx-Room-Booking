@@ -4,6 +4,7 @@ import {HttpClientResponse, HttpClient, IHttpClientOptions, MSGraphClient, SPHtt
 import {formatStartDate, formatEndDate} from '../Services/EventFormat';
 import {parseRecurrentEvent} from '../Services/RecurrentEventOps';
 
+export const calsErrs : any = [];
 
 const resolveCalUrl = (context: WebPartContext, calType:string, calUrl:string, calName:string) : string => {
     let resolvedCalUrl:string,
@@ -45,7 +46,7 @@ const getGraphCals = (context: WebPartContext, calSettings:{CalType:string, Titl
                     .header('Prefer','outlook.timezone="Eastern Standard Time"')	
                     .get((error, response: any, rawResponse?: any)=>{	
                         if(error){	
-                            alert("Calendar Graph Error - " + calSettings.Title);	
+                            calsErrs.push("MS Graph Error - " + calSettings.Title);
                         }	
                         if(response){	
                             response.value.map((result:any)=>{	
@@ -66,7 +67,7 @@ const getGraphCals = (context: WebPartContext, calSettings:{CalType:string, Titl
                         resolve(calEvents);	
                     });	
             }, (error)=>{	
-                alert(error);	
+                calsErrs.push(error);
             });	
     });	
 };
@@ -186,11 +187,11 @@ export const getDefaultCals = async (context: WebPartContext, calSettings:{CalTy
                 });
             }
         }else{
-            alert("Calendar Error: " + calSettings.Title + ' - ' + _data.statusText);
+            calsErrs.push(calSettings.Title + ' - ' + _data.statusText);
             return [];
         }
     } catch(error){
-        alert("Calendar Error for external calendars - " + error);
+        calsErrs.push("External calendars invalid - " + error);
     }
         
     return calEvents;
@@ -279,7 +280,6 @@ export const getLegendChksState = (calsVisibilityState: any, calVisibility: any)
     }else{
         calsVisibilityArr.map(i=> i.calId == calVisibility.calId ? i.calChk = calVisibility.calChk : '' );
     }
-    console.log("calsVisibilityArr calsVisibilityArr calsVisibilityArr", calsVisibilityArr);
     return calsVisibilityArr;
 };
 
