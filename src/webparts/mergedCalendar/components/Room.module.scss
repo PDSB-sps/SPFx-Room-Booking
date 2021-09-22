@@ -43,6 +43,7 @@
         // height: 120px;
         // border-radius: 0 0 0 3px;
         // margin-top: 10px;
+        margin-left: 10px;
         height: 120px;
         border-radius: 0 0 0 3px;
         display: flex;
@@ -315,6 +316,11 @@
 // }
 
 .roomsManage{
+    &:after{
+        content: " ";
+        display: block;
+        clear: both;
+    }
     i{
         font-size: 12px;
     }
@@ -324,6 +330,7 @@
     .siteManage{
         padding: 10px 4px 0 4px;
         float: right;
+        height: 30px;
         i{
             font-size: 12px;
             padding-right: 5px;
@@ -340,7 +347,34 @@
 @media only screen and (max-width: 955px) {
     .roomCard{
         img{
-            height: 65px;
+            max-width: 60px;
         }
+    }
+}
+@media only screen and (max-width: 1180px) {
+    .roomsManage{
+        .siteManage{
+            clear: both;
+            float: left;
+        }
+    }
+}
+
+@media only screen and (max-width: 830px) {
+    .allRoomsCntnr, .allCalendarCntnr{
+      float: none;
+      width: 100%;
+    }
+    .roomCard {
+        img{
+            height: 50px;
+            width: auto;
+        }
+        .noPicture{
+            width: auto;
+            font-size: 60px;
+            margin-left: 10px;
+        }
+        
     }
 }
