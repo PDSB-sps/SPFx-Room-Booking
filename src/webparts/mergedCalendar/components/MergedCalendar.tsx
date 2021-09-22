@@ -28,6 +28,7 @@ import toast, { Toaster } from 'react-hot-toast';
 import { IFrameDialog } from "@pnp/spfx-controls-react/lib/IFrameDialog";
 import { PrimaryButton } from 'office-ui-fabric-react';
 import ILegendRooms from './ILegendRooms/ILegendRooms';
+import IPreloader from './IPreloader/IPreloader';
 
 export default function MergedCalendar (props:IMergedCalendarProps) {
   
@@ -109,6 +110,7 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
   const [eventSourcesState, dispatchEventSources] = React.useReducer(eventSourcesReducer, []);
 
   const loadLatestCalendars = async (callback?: any) =>{
+    toggleIsDataLoading();
     _calendarOps.displayCalendars(props.context, calSettingsList, roomId).then((results: any)=>{
       setRoomsCalendar(getRoomsCalendarName(results[0]));
       setCalSettings(results[0]);
@@ -116,6 +118,7 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
       dispatchEventSources({type: ACTIONS.LOAD_EVENTS, payload: results[1] });
       if (calsVisibility.length > 1)
         dispatchEventSources({type: ACTIONS.LOAD_EVENTS_VIS, payload: calsVisibility });
+        toggleIsDataLoading();
       callback ? callback() : null;
     });
   };
@@ -464,6 +467,11 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
 
       <Toaster />
       
+      <IPreloader 
+        isDataLoading = {isDataLoading} 
+        text = "Please wait, Loading Events..."
+      />
+
       <div className={roomStyles.roomsCalendarCntnr}>
         <div className={roomStyles.allRoomsCntnr}> 
         {filteredRooms.length !== 0 ?
@@ -546,7 +554,7 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
             calSettings={calSettings} 
             onLegendChkChange={onLegendChkChange}
           />
-        </div>
+        </div>        
         <ICalendar 
           // eventSources={filteredEventSources} 
           // eventSources={eventSources} 
