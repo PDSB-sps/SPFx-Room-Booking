@@ -588,7 +588,7 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
         isDataLoading = {isDataLoading} 
         showWeekends= {showWeekends} 
         onChkViewChange= {chkViewHandleChange}
-        />
+      />
 
       {eventDetails &&
         <IDialog 
@@ -609,7 +609,9 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
         isBlocking={false}
         // isLightDismiss={true}
       >
+        
         <IRoomDetails roomInfo={roomInfo} />
+        <IPreloader isDataLoading = {isDataLoading} text = "" />
         <Dialog
             hidden={!dialogState.dlgDelete}
             onDismiss={() => dialogDispatch({type: ACTIONS.ROOM_DELETE_TOGGLE})}
@@ -664,6 +666,7 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
             <IRoomGuidelines guidelines = {guidelines} /> 
           </MessageBar>
         </IRoomBook>
+        <IPreloader isDataLoading = {isDataLoading} text = "" />
       </Panel>
 
     </div>
