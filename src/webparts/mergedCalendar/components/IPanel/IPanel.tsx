@@ -24,7 +24,10 @@ export default function IPanel (props:IPanelProps) {
                 onChkViewChange={props.onChkViewChange}
             />
             
-            <IPreloader isDataLoading={props.isDataLoading} />
+            <IPreloader 
+                isDataLoading={props.isDataLoading} 
+                text = "Please Wait, Calendars are updating..."
+            />
 
         </Panel>
     );

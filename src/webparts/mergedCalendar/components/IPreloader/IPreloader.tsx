@@ -7,15 +7,13 @@ import {Spinner, SpinnerSize, Overlay} from '@fluentui/react';
 export default function IPreloader (props:IPreloaderProps) {
 
     return(
-        <>
+        <React.Fragment>
             {props.isDataLoading &&
-                <>
-                    <Overlay></Overlay>
-                    <div className={styles.marginT20}>
-                        <Spinner size={SpinnerSize.medium} label="Please Wait, Calendars are updating..." ariaLive="assertive" labelPosition="right" />
-                    </div>
-                </>
+                <div className={styles.preloader}>
+                    <Spinner className={styles.preloaderTxt} size={SpinnerSize.medium} label={props.text} ariaLive="assertive" labelPosition="right" />
+                    <Overlay className={styles.preloaderOverlay}></Overlay>
+                </div>
             }
-        </>
+        </React.Fragment>
     );
 }

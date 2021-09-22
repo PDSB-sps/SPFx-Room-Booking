@@ -169,6 +169,16 @@
   
 }
 
+.preloader{
+  .preloaderTxt{
+    position: relative;
+    z-index: 9999;
+  }
+  .preloaderOverlay{
+    background: rgba(255, 255, 255, 0.8);
+    z-index: 99;
+  }
+}
 
 .eventDetails{
   .evLbl{
