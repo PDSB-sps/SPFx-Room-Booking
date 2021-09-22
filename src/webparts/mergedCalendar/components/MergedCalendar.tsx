@@ -419,7 +419,7 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
     });
   };
   const onIFrameLoad = async (iframe: any) => {
-    if(iframe.contentWindow.location.href.indexOf('AllItems.aspx') > 0)
+    if(iframe.contentWindow.location.href.indexOf('AllItems.aspx') > 0 && iFrameState.iFrameState !== 'All')
       onIFrameDismiss(null);  
   };
   const onEditRoom = (editedRoomId: any) =>{
@@ -484,6 +484,44 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
               roomSelectedKey={roomSelectedKey}
               locationGroup = {locationGroup}
             />
+
+            {isUserManage &&
+              <React.Fragment>
+                <Dialog
+                  hidden={!dialogState.dlgDelete}
+                  onDismiss={() => dialogDispatch({type: ACTIONS.ROOM_DELETE_TOGGLE})}
+                  dialogContentProps={dialogContentProps}
+                  modalProps={modelProps}
+                >
+                  <DialogFooter>
+                      <PrimaryButton onClick={() => onDeleteRoomClickHandler(roomLoadedId)} text="Yes" />
+                      <DefaultButton onClick={() => dialogDispatch({type: ACTIONS.ROOM_DELETE_TOGGLE})} text="No" />
+                  </DialogFooter>
+                </Dialog>
+                <IFrameDialog 
+                  url={iFrameState.iFrameUrl}
+                  width={iFrameState.iFrameState === "Add" ? '40%' : '70%'}
+                  height={'90%'}
+                  hidden={!iFrameState.iFrameShow}
+                  iframeOnLoad={(iframe) => onIFrameLoad(iframe)}
+                  onDismiss={(event) => onIFrameDismiss(event)}
+                  allowFullScreen = {true}
+                  dialogContentProps={{
+                    type: DialogType.close,
+                    showCloseButton: true
+                  }}
+                />
+                <IRoomsManage 
+                  context={props.context}
+                  roomsList={props.roomsList}
+                  periodsList={props.periodsList}
+                  guidelinesList={props.guidelinesList}
+                  onRoomsManage={onRoomsManage}
+                  iframeState = {iFrameState.iFrameState}
+                />            
+              </React.Fragment>
+            }
+
             <IRooms 
               rooms={filteredRooms} 
               onCheckAvailClick={() => onCheckAvailClick} 
@@ -498,42 +536,7 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
               There are no Rooms created yet. Please use the "Add" and "Edit" options below to manage your Rooms, Periods and Guidelines.
             </MessageBar>
           }
-          {isUserManage &&
-            <React.Fragment>
-              <Dialog
-                hidden={!dialogState.dlgDelete}
-                onDismiss={() => dialogDispatch({type: ACTIONS.ROOM_DELETE_TOGGLE})}
-                dialogContentProps={dialogContentProps}
-                modalProps={modelProps}
-              >
-                <DialogFooter>
-                    <PrimaryButton onClick={() => onDeleteRoomClickHandler(roomLoadedId)} text="Yes" />
-                    <DefaultButton onClick={() => dialogDispatch({type: ACTIONS.ROOM_DELETE_TOGGLE})} text="No" />
-                </DialogFooter>
-              </Dialog>
-              <IFrameDialog 
-                url={iFrameState.iFrameUrl}
-                width={iFrameState.iFrameState === "Add" ? '40%' : '70%'}
-                height={'90%'}
-                hidden={!iFrameState.iFrameShow}
-                iframeOnLoad={(iframe) => onIFrameLoad(iframe)}
-                onDismiss={(event) => onIFrameDismiss(event)}
-                allowFullScreen = {true}
-                dialogContentProps={{
-                  type: DialogType.close,
-                  showCloseButton: true
-                }}
-              />
-              <IRoomsManage 
-                context={props.context}
-                roomsList={props.roomsList}
-                periodsList={props.periodsList}
-                guidelinesList={props.guidelinesList}
-                onRoomsManage={onRoomsManage}
-                iframeState = {iFrameState.iFrameState}
-              />            
-            </React.Fragment>
-          }
+          
         </div>
 
         <div className={roomStyles.allCalendarCntnr}>
