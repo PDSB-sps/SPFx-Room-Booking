@@ -66,7 +66,9 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
     ROOM_DELETE_TOGGLE : "room-delete-toggle",
     ROOMS_MANAGE : "rooms-manage",
     IFRAME_DISMISS: "iframe-dimiss",
-    ROOM_EDIT: "room-edit"
+    ROOM_EDIT: "room-edit",
+    LOAD_EVENTS: "load-events",
+    LOAD_EVENTS_VIS : "load-events-visibility"
   };
 
   const dlgInitialState : any = {dlgDetails: false, dlgDelete: false};
@@ -87,11 +89,33 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
   const periodsList = props.periodsList ? props.periodsList : "Periods";
   const guidelinesList = props.guidelinesList ? props.guidelinesList : "Guidelines";
   
+  const eventSourcesReducer = (state: any, action: any) => {
+    switch (action.type){
+      case ACTIONS.LOAD_EVENTS:
+        return [...action.payload];
+      case ACTIONS.LOAD_EVENTS_VIS:
+        const prevEventSources = state;
+        let tempEventSources = [];
+        action.payload.map(calVis =>{
+          if (calVis.calId){
+            tempEventSources = reRenderCalendars(prevEventSources, calVis);
+          }
+        });
+      return [...tempEventSources];
+      default:
+        return state;
+    }
+  };
+  const [eventSourcesState, dispatchEventSources] = React.useReducer(eventSourcesReducer, []);
+
   const loadLatestCalendars = async (callback?: any) =>{
     _calendarOps.displayCalendars(props.context, calSettingsList, roomId).then((results: any)=>{
       setRoomsCalendar(getRoomsCalendarName(results[0]));
       setCalSettings(results[0]);
-      setEventSources(results[1]);
+      //setEventSources(results[1]);
+      dispatchEventSources({type: ACTIONS.LOAD_EVENTS, payload: results[1] });
+      if (calsVisibility.length > 1)
+        dispatchEventSources({type: ACTIONS.LOAD_EVENTS_VIS, payload: calsVisibility });
       callback ? callback() : null;
     });
   };
@@ -122,7 +146,9 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
   }, []);
 
   React.useEffect(()=>{
-    setEventSources(reRenderCalendars(eventSources, calVisibility));
+    // setEventSources(reRenderCalendars(eventSources, calVisibility));
+    const updatedEventSources = reRenderCalendars(eventSourcesState, calVisibility);
+    dispatchEventSources({type: ACTIONS.LOAD_EVENTS, payload: updatedEventSources});
     setCalsVisibility(getLegendChksState(calsVisibility, calVisibility));
   },[calVisibility]);
 
@@ -307,8 +333,7 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
           addEvent(props.context, roomsCalendar, formField, roomInfo).then(()=>{
             const callback = () =>{
               dismissPanelBook();
-              popToast('A New Event Booking is successfully added!');
-              // calsVisibility.map(calVis => calVis.calId ? setEventSources(reRenderCalendars(eventSources, calVis)) : '');
+              popToast('A New Event Booking is successfully added!');                              
             };
             loadLatestCalendars(callback);
           });
@@ -524,7 +549,8 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
         </div>
         <ICalendar 
           // eventSources={filteredEventSources} 
-          eventSources={eventSources} 
+          // eventSources={eventSources} 
+          eventSources={eventSourcesState}
           showWeekends={showWeekends}
           openPanel={openPanel}
           handleDateClick={handleDateClick}
