@@ -33,6 +33,41 @@ export const getLocationGroup = async(context: WebPartContext, roomsList: string
     return adjustLocation(results.value[0].Choices);
 };
 
+
+const getCanBookPeriods = (period: any, allPeriods: any) =>{  
+    console.log("allPeriods", allPeriods);
+    for (let i in allPeriods){
+      if (
+            // moment(period.start) >= moment(allPeriods[i].start) && moment(period.start) <= moment(allPeriods[i].end) ||
+            // moment(period.end) >= moment(allPeriods[i].start) && moment(period.end) <= moment(allPeriods[i].end) ||
+            // moment(period.start) <= moment(allPeriods[i].start) && moment(period.end) >= moment(allPeriods[i].end)
+            moment(period.start).isSameOrAfter(moment(allPeriods[i].start)) && moment(period.start).isSameOrBefore(moment(allPeriods[i].end)) ||
+            moment(period.end).isSameOrAfter(moment(allPeriods[i].start)) && moment(period.end).isSameOrBefore(moment(allPeriods[i].end)) ||
+            moment(period.start).isSameOrBefore(moment(allPeriods[i].start)) && moment(period.end).isSameOrAfter(moment(allPeriods[i].end))
+         ){
+            console.log("period.text", period.text);
+            console.log("moment(period.start) >= moment(allPeriods[i].start)", moment(period.start) >= moment(allPeriods[i].start));
+            console.log("moment(period.start) <= moment(allPeriods[i].end)", moment(period.start) <= moment(allPeriods[i].end));
+            allPeriods[i].disabled = true;
+        }
+    } 
+    console.log("updatedPeriods", allPeriods);
+    return allPeriods;
+};
+const updatePeriods = (allPeriods: any) => {
+    let bookedPeriods: any = [], updatedPeriods : any = [];
+    bookedPeriods = allPeriods.filter((period: any) => period.disabled); 
+    console.log("bookedPeriods", bookedPeriods);
+    if (bookedPeriods.length === 0){
+        return allPeriods;
+    }
+    /*for (let j=0; j<bookedPeriods.length; j++){
+        updatedPeriods = getCanBookPeriods(bookedPeriods[j], allPeriods);
+    }*/
+    updatedPeriods = bookedPeriods.map((bookedPeriod: any) => getCanBookPeriods(bookedPeriod, allPeriods));
+    return updatedPeriods.flat();
+};
+
 const adjustPeriods = (arr: [], disabledPeriods: any): {}[] =>{
     let arrAdj :{}[] = [];
 
@@ -47,7 +82,7 @@ const adjustPeriods = (arr: [], disabledPeriods: any): {}[] =>{
         });
     });
 
-    return arrAdj;
+    return updatePeriods(arrAdj);
 };
 export const getPeriods = async (context: WebPartContext, periodsList: string, roomId: any, bookingDate: any) =>{
     console.log("Get Periods Function");
