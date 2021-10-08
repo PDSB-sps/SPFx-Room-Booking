@@ -101,14 +101,16 @@ export default function IRoomBook (props:IRoomBookProps) {
         subText: 'Are you sure you want to delete this event booking?',
     };
     const [hideDialog, { toggle: toggleHideDialog }] = useBoolean(true);
+    const panelHdrColor = props.bookFormMode === "New" ? props.roomInfo.Colour : props.eventDetailsRoom.Color;
 
     //console.log("props.formField", props.formField);
+
     return(
         <React.Fragment>
         <div className={roomStyles.bookingForm}>
 
             <div 
-                style={{backgroundColor: props.roomInfo.Color !== undefined ? props.roomInfo.Color : props.roomInfo.Colour}} 
+                style={{backgroundColor: panelHdrColor}} 
                 className={roomStyles.roomColor}>
             </div>
 
@@ -121,7 +123,7 @@ export default function IRoomBook (props:IRoomBookProps) {
                 }
                 {props.bookFormMode === "Edit" &&
                     <div className={roomStyles.editDeleteBtns}>
-                        <PrimaryButton className={roomStyles.editBtn} iconProps={checkIcon} title="Update Booking" ariaLabel="Update Booking" onClick={() => props.onUpdateBookingClick(props.eventId)} />
+                        <PrimaryButton className={roomStyles.editBtn} iconProps={checkIcon} title="Update Booking" ariaLabel="Update Booking" onClick={() => props.onUpdateBookingClick(props.eventDetailsRoom.EventId)} />
                     </div>
                 }
                 {props.bookFormMode === "View" && ( props.isCreator || isUserManage ) &&
@@ -198,7 +200,7 @@ export default function IRoomBook (props:IRoomBookProps) {
                 modalProps={modelProps}
             >
                 <DialogFooter>
-                    <PrimaryButton onClick={() => props.onDeleteBookingClick(props.eventId)} text="Yes" />
+                    <PrimaryButton onClick={() => props.onDeleteBookingClick(props.eventDetailsRoom.EventId)} text="Yes" />
                     <DefaultButton onClick={toggleHideDialog} text="No" />
                 </DialogFooter>
             </Dialog>
@@ -207,7 +209,7 @@ export default function IRoomBook (props:IRoomBookProps) {
                 <PrimaryButton text="Book" onClick={props.onNewBookingClick} className={styles.marginR10}/>
             }            
             {props.bookFormMode === "Edit" &&
-                <PrimaryButton text="Update" onClick={() => props.onUpdateBookingClick(props.eventId)} className={styles.marginR10}/>
+                <PrimaryButton text="Update" onClick={() => props.onUpdateBookingClick(props.eventDetailsRoom.EventId)} className={styles.marginR10}/>
             }
             <DefaultButton text="Cancel" onClick={props.dismissPanelBook}  />
         </div>

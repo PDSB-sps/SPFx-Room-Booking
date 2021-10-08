@@ -3,10 +3,10 @@ export interface IRoomBookProps{
     errorMsgField: any;
     onChangeFormField: any;
     periodOptions: any;
-    roomInfo: any;
     children: any;
-
-    eventId: any;
+    
+    roomInfo: any;
+    eventDetailsRoom: any;
     dismissPanelBook: any;
     bookFormMode: string;
     onNewBookingClick: any;

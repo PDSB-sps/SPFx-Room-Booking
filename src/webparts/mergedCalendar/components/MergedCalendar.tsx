@@ -48,7 +48,6 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
   const [roomId, setRoomId] = React.useState(null);
   const [roomLoadedId, setRoomLoadedId] = React.useState(roomId);
   const [roomInfo, setRoomInfo] = React.useState(null);
-  const [eventId, setEventId] = React.useState(null);
   const [isCreator, setIsCreator] = React.useState(false);
   const [isOpenDetails, { setTrue: openPanelDetails, setFalse: dismissPanelDetails }] = useBoolean(false);
   const [isOpenBook, { setTrue: openPanelBook, setFalse: dismissPanelBook }] = useBoolean(false);
@@ -230,7 +229,7 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
       setErrorMsgField({titleField: "", periodField: ""});
 
       if(formFieldParam === 'dateField'){
-        getPeriods(props.context, periodsList, roomInfo.Id, event).then((results)=>{
+        getPeriods(props.context, periodsList, roomInfo.Id ? roomInfo.Id : eventDetailsRoom.RoomId , event).then((results)=>{
           setPeriods(results);
         });
       }
@@ -241,8 +240,6 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
     if(arg.event._def.extendedProps.roomId){
       setBookFormMode('View');
       const evDetails: any = formatEvDetails(arg);
-      setEventId(evDetails.EventId);
-      setRoomInfo(evDetails);
       setEventDetailsRoom(evDetails);
       
       isEventCreator(props.context, roomsCalendar, evDetails.EventId).then((v)=>{
@@ -368,12 +365,12 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
     });
   };
   const onUpdateBookingClickHandler = (eventIdParam: any) =>{
-    getPeriods(props.context, periodsList, roomInfo.Id, formField.dateField).then((results: any)=>{
+    getPeriods(props.context, periodsList, eventDetailsRoom.RoomId, formField.dateField).then((results: any)=>{
       setPeriods(results);
       
       let seletedPeriod = results.filter(item => item.key === formField.periodField.key);
       if (!seletedPeriod[0].disabled){          
-        updateEvent(props.context, roomsCalendar, eventIdParam, formField, roomInfo).then(()=>{
+        updateEvent(props.context, roomsCalendar, eventIdParam, formField, eventDetailsRoom).then(()=>{
           const callback = () =>{
             dismissPanelBook();
             popToast('Event Booking is successfully updated!');
@@ -662,15 +659,15 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
           formField = {formField}
           errorMsgField={errorMsgField} 
           periodOptions = {periods}
+          eventDetailsRoom = {eventDetailsRoom}
           onChangeFormField={onChangeFormField}
-          roomInfo={roomInfo}
           dismissPanelBook={dismissPanelBook}
           bookFormMode = {bookFormMode}
           onNewBookingClick={onNewBookingClickHandler}
           onEditBookingClick={onEditBookingClickHandler}
           onDeleteBookingClick={onDeleteBookingClickHandler}
           onUpdateBookingClick={onUpdateBookingClickHandler}
-          eventId = {eventId}
+          roomInfo={roomInfo}
           isCreator = {isCreator}
         >
           <MessageBar 
