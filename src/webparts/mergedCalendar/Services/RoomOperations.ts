@@ -35,41 +35,44 @@ export const getLocationGroup = async(context: WebPartContext, roomsList: string
 
 
 const getCanBookPeriods = (period: any, allPeriods: any) =>{  
-    console.log("allPeriods", allPeriods);
+    const periodStart = moment(period.start).format('HHmm').toString();
+    const periodEnd = moment(period.end).format('HHmm').toString();
     for (let i in allPeriods){
+        const thisPeriodStart = moment(allPeriods[i].start).format('HHmm').toString();
+        const thisPeriodEnd = moment(allPeriods[i].end).format('HHmm').toString();
       if (
-            // moment(period.start) >= moment(allPeriods[i].start) && moment(period.start) <= moment(allPeriods[i].end) ||
-            // moment(period.end) >= moment(allPeriods[i].start) && moment(period.end) <= moment(allPeriods[i].end) ||
-            // moment(period.start) <= moment(allPeriods[i].start) && moment(period.end) >= moment(allPeriods[i].end)
-            moment(period.start).isSameOrAfter(moment(allPeriods[i].start)) && moment(period.start).isSameOrBefore(moment(allPeriods[i].end)) ||
-            moment(period.end).isSameOrAfter(moment(allPeriods[i].start)) && moment(period.end).isSameOrBefore(moment(allPeriods[i].end)) ||
-            moment(period.start).isSameOrBefore(moment(allPeriods[i].start)) && moment(period.end).isSameOrAfter(moment(allPeriods[i].end))
+            periodStart >= thisPeriodStart && periodStart <= thisPeriodEnd ||
+            periodEnd >= thisPeriodStart && periodEnd <= thisPeriodEnd ||
+            periodStart <= thisPeriodStart && periodEnd >= thisPeriodEnd 
          ){
-            console.log("period.text", period.text);
-            console.log("moment(period.start) >= moment(allPeriods[i].start)", moment(period.start) >= moment(allPeriods[i].start));
-            console.log("moment(period.start) <= moment(allPeriods[i].end)", moment(period.start) <= moment(allPeriods[i].end));
             allPeriods[i].disabled = true;
         }
     } 
-    console.log("updatedPeriods", allPeriods);
     return allPeriods;
 };
 const updatePeriods = (allPeriods: any) => {
     let bookedPeriods: any = [], updatedPeriods : any = [];
     bookedPeriods = allPeriods.filter((period: any) => period.disabled); 
-    console.log("bookedPeriods", bookedPeriods);
     if (bookedPeriods.length === 0){
         return allPeriods;
     }
-    /*for (let j=0; j<bookedPeriods.length; j++){
+    for (let j=0; j<bookedPeriods.length; j++){
         updatedPeriods = getCanBookPeriods(bookedPeriods[j], allPeriods);
-    }*/
-    updatedPeriods = bookedPeriods.map((bookedPeriod: any) => getCanBookPeriods(bookedPeriod, allPeriods));
-    return updatedPeriods.flat();
+    }
+    return updatedPeriods;
+    
+    //updatedPeriods = bookedPeriods.map((bookedPeriod: any) => getCanBookPeriods(bookedPeriod, allPeriods));
+    //return updatedPeriods.flat();
+
+    // const uniqueUpdatedPeriods = updatedPeriods.flat().filter((v,i,a)=>a.findIndex(t=>(t.key === v.key))===i);
+    // return uniqueUpdatedPeriods;
 };
 
 const adjustPeriods = (arr: [], disabledPeriods: any): {}[] =>{
     let arrAdj :{}[] = [];
+
+    // console.log("disabledPeriods", disabledPeriods);
+    // console.log("selectedPeriod", selectedPeriod);
 
     arr.map((item: any)=>{
         arrAdj.push({
@@ -83,8 +86,9 @@ const adjustPeriods = (arr: [], disabledPeriods: any): {}[] =>{
     });
 
     return updatePeriods(arrAdj);
+    //return arrAdj;
 };
-export const getPeriods = async (context: WebPartContext, periodsList: string, roomId: any, bookingDate: any) =>{
+export const getPeriods = async (context: WebPartContext, periodsList: string, roomId: any, bookingDate: any, selectedPeriod?: any) =>{
     console.log("Get Periods Function");
     const restUrl = context.pageContext.web.absoluteUrl + `/_api/web/lists/getByTitle('${periodsList}')/items?$orderBy=SortOrder asc`;
     const results = await context.spHttpClient.get(restUrl, SPHttpClient.configurations.v1).then(response => response.json());
@@ -95,10 +99,14 @@ export const getPeriods = async (context: WebPartContext, periodsList: string, r
     let bookedPeriods : any = [];
     let bookingDateDay = moment(bookingDate).format('MM-DD-YYYY');
     for (let resultEvent of resultsEvents.value){
-        if(moment(resultEvent.EventDate).format('MM-DD-YYYY') === bookingDateDay){
+        if(moment(resultEvent.EventDate).format('MM-DD-YYYY') === bookingDateDay && resultEvent.PeriodsId !== selectedPeriod){
             bookedPeriods.push(resultEvent.PeriodsId);
         }
     }
+
+    console.log("resultsEvents.value", resultsEvents.value)
+    console.log("bookedPeriods", bookedPeriods);
+    console.log("selectedPeriod", selectedPeriod);
 
     return adjustPeriods(results.value, bookedPeriods);
 };
@@ -261,7 +269,7 @@ export const deleteItem = async (context: WebPartContext, listName: string, item
     }
 };
 
-export const updateEvent = async (context: WebPartContext, roomsCalListName: string, eventId: any, eventDetails: any, roomInfo: any) => {
+export const updateEvent = async (context: WebPartContext, roomsCalListName: string, eventId: any, eventDetails: any, eventDetailsRoom: any) => {
     const restUrl = `${context.pageContext.web.absoluteUrl}/_api/web/lists/getByTitle('${roomsCalListName}')/items(${eventId})`,
     body: string = JSON.stringify({
         Title: eventDetails.titleField,
@@ -269,8 +277,8 @@ export const updateEvent = async (context: WebPartContext, roomsCalListName: str
         EventDate: getChosenDate(eventDetails.periodField.start, eventDetails.periodField.end, eventDetails.dateField)[0],
         EndDate: getChosenDate(eventDetails.periodField.start, eventDetails.periodField.end, eventDetails.dateField)[1],
         PeriodsId: eventDetails.periodField.key,
-        RoomNameId: roomInfo.Id,
-        Location: roomInfo.Title,
+        RoomNameId: eventDetailsRoom.RoomId,
+        Location: eventDetailsRoom.Room,
         AddToMyCal: eventDetails.addToCalField
     }),
     spOptions: ISPHttpClientOptions = {

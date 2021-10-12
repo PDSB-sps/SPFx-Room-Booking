@@ -29,6 +29,8 @@ import { IFrameDialog } from "@pnp/spfx-controls-react/lib/IFrameDialog";
 import { PrimaryButton } from 'office-ui-fabric-react';
 import ILegendRooms from './ILegendRooms/ILegendRooms';
 import IPreloader from './IPreloader/IPreloader';
+import * as moment from 'moment';
+
 
 export default function MergedCalendar (props:IMergedCalendarProps) {
   
@@ -48,6 +50,7 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
   const [roomId, setRoomId] = React.useState(null);
   const [roomLoadedId, setRoomLoadedId] = React.useState(roomId);
   const [roomInfo, setRoomInfo] = React.useState(null);
+  const [selectedPeriod, setSelectedPeriod] = React.useState('');
   const [isCreator, setIsCreator] = React.useState(false);
   const [isOpenDetails, { setTrue: openPanelDetails, setFalse: dismissPanelDetails }] = useBoolean(false);
   const [isOpenBook, { setTrue: openPanelBook, setFalse: dismissPanelBook }] = useBoolean(false);
@@ -227,20 +230,33 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
       });
 
       setErrorMsgField({titleField: "", periodField: ""});
+      // const calculatedRoomId = roomInfo ? roomInfo.Id : eventDetailsRoom.RoomId;
+      // console.log("bookFormMode", bookFormMode);
+      const calculatedRoomId = bookFormMode === "New" ? roomInfo.Id : eventDetailsRoom.RoomId;
 
-      if(formFieldParam === 'dateField'){
-        getPeriods(props.context, periodsList, roomInfo.Id ? roomInfo.Id : eventDetailsRoom.RoomId , event).then((results)=>{
+      // console.log("formField.dateField", formField.dateField);
+      // console.log("event", event);
+      // console.log("formField.dateField !== event", moment(formField.dateField).format('MM-DD-YYYY') !== moment(event).format('MM-DD-YYYY'));
+
+      if(formFieldParam === 'dateField' && moment(formField.dateField).format('MM-DD-YYYY') !== moment(event).format('MM-DD-YYYY')){
+        setFormField((prevState)=>{
+          return {...prevState, periodField : {key: '', text:'', start:new Date(), end:new Date()}}
+        })
+        getPeriods(props.context, periodsList, calculatedRoomId , event, null).then((results)=>{
           setPeriods(results);
         });
       }
     };
   };
 
+  
+
   const handleDateClick = (arg:any) =>{    
     if(arg.event._def.extendedProps.roomId){
-      setBookFormMode('View');
       const evDetails: any = formatEvDetails(arg);
       setEventDetailsRoom(evDetails);
+      setSelectedPeriod(evDetails.PeriodId);
+      setBookFormMode('View');
       
       isEventCreator(props.context, roomsCalendar, evDetails.EventId).then((v)=>{
         setIsCreator(v);
@@ -248,7 +264,7 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
       getGuidelines(props.context, guidelinesList).then((results)=>{
         setGuidelines(results);
       });
-      getPeriods(props.context, periodsList, evDetails.RoomId, new Date(evDetails.Start)).then((results)=>{
+      getPeriods(props.context, periodsList, evDetails.RoomId, new Date(evDetails.Start), evDetails.PeriodId).then((results)=>{
         setPeriods(results);
       });
       
@@ -365,7 +381,7 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
     });
   };
   const onUpdateBookingClickHandler = (eventIdParam: any) =>{
-    getPeriods(props.context, periodsList, eventDetailsRoom.RoomId, formField.dateField).then((results: any)=>{
+    getPeriods(props.context, periodsList, eventDetailsRoom.RoomId, formField.dateField, eventDetailsRoom.PeriodId).then((results: any)=>{
       setPeriods(results);
       
       let seletedPeriod = results.filter(item => item.key === formField.periodField.key);
