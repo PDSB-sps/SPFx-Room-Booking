@@ -121,3 +121,11 @@ th .fc-scrollgrid-sync-inner{
 .eventHidden{
     display: none;
 }
+
+// Better CSS for events display
+.fc-daygrid-event{
+    white-space: normal;
+}
+.fc .fc-daygrid-body-unbalanced .fc-daygrid-day-events{
+    min-height: 4em;
+}
