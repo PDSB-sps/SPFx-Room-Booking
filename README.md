@@ -74,4 +74,16 @@ https://pnp.github.io/sp-dev-fx-controls-react/controls/IFrameDialog/
 `npm install @pnp/spfx-controls-react --save --save-exact` <br/>
 
 
+# To avoid errors in deployment after changing the application ID
+1- Delete first these folders:
+    - dist
+    - lib
+    - temp
+    - release
+2- Run > gulp build
+3- Run > gulp serve --nobrowser
+4- Run > gulp package-solution 
+
+
+
 
