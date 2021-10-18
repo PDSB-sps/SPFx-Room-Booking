@@ -93,7 +93,7 @@ export const getPeriods = async (context: WebPartContext, periodsList: string, r
     const restUrl = context.pageContext.web.absoluteUrl + `/_api/web/lists/getByTitle('${periodsList}')/items?$orderBy=SortOrder asc`;
     const results = await context.spHttpClient.get(restUrl, SPHttpClient.configurations.v1).then(response => response.json());
 
-    const restUrlEvents = context.pageContext.web.absoluteUrl + `/_api/web/lists/getByTitle('Events')/items?$filter=RoomNameId eq '${roomId}'`;
+    const restUrlEvents = context.pageContext.web.absoluteUrl + `/_api/web/lists/getByTitle('Events')/items?$filter=RoomNameId eq '${roomId}'&$top=600`;
     const resultsEvents = await context.spHttpClient.get(restUrlEvents, SPHttpClient.configurations.v1).then(response => response.json());
     
     let bookedPeriods : any = [];
