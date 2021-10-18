@@ -11,7 +11,7 @@ import {ICalendarProps} from './ICalendarProps';
 import {isUserManage} from '../../Services/WpProperties';
 
 export default function ICalendar(props:ICalendarProps){
-
+    
     return(
         <div className={styles.calendarCntnr}>
           <FullCalendar
@@ -57,11 +57,11 @@ export default function ICalendar(props:ICalendarProps){
             eventSources = {props.eventSources}
             contentHeight='auto'
             eventContent = {(eventInfo)=>{
-              // console.log("eventInfo", eventInfo);
+              //console.log("eventInfo", eventInfo);
               return (
                 <div className="roomEvent">
                   {/* <b>{eventInfo.timeText}</b> */}
-                  <b>&nbsp;{eventInfo.event._def.extendedProps.period}</b>
+                  <div>&nbsp;{eventInfo.event._def.extendedProps.roomTitle} - {eventInfo.event._def.extendedProps.period}</div>
                   <i>&nbsp;{eventInfo.event.title}</i>
                 </div>
               );
