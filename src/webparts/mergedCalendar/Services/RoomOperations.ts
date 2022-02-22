@@ -159,6 +159,9 @@ export const getChosenDate = (startPeriodField: any, endPeriodField: any, formFi
     const startPeriod = new Date(startPeriodField);
     const endPeriod = new Date(endPeriodField);
     const currDate = new Date(formFieldParam);
+    
+    // console.log("formFieldParam", formFieldParam)
+    // console.log("currDate", currDate)
 
     const startPeriodHr = startPeriod.getHours();
     const startPeriodMin = startPeriod.getMinutes();
@@ -169,19 +172,34 @@ export const getChosenDate = (startPeriodField: any, endPeriodField: any, formFi
     const dateMonth = currDate.getMonth();
     const dateYear = currDate.getFullYear();
 
-    let chosenStartDate = new Date();
-    chosenStartDate.setDate(dateDay);
-    chosenStartDate.setMonth(dateMonth);
-    chosenStartDate.setFullYear(dateYear);
+    // console.log("dateDay", dateDay);
+    // console.log("dateMonth", dateMonth);
+    // console.log("dateYear", dateYear);
+
+    //let chosenStartDate = new Date();
+    // chosenStartDate.setDate(dateDay);
+    // chosenStartDate.setMonth(dateMonth);
+    // chosenStartDate.setFullYear(dateYear);
+    // chosenStartDate.setHours(startPeriodHr);
+    // chosenStartDate.setMinutes(startPeriodMin);
+
+    // let chosenEndDate = new Date();
+    // chosenEndDate.setDate(dateDay);
+    // chosenEndDate.setMonth(dateMonth);
+    // chosenEndDate.setFullYear(dateYear);
+    // chosenEndDate.setHours(endPeriodHr);
+    // chosenEndDate.setMinutes(endPeriodMin);
+
+    // A fix for the Feb-Mar issue - the date was sitting the day first in Feb which only have 28 days. So wasn't working for 29,30,31 days of the month
+    let chosenStartDate = new Date(dateYear, dateMonth, dateDay);
     chosenStartDate.setHours(startPeriodHr);
     chosenStartDate.setMinutes(startPeriodMin);
 
-    let chosenEndDate = new Date();
-    chosenEndDate.setDate(dateDay);
-    chosenEndDate.setMonth(dateMonth);
-    chosenEndDate.setFullYear(dateYear);
+    let chosenEndDate = new Date(dateYear, dateMonth, dateDay);
     chosenEndDate.setHours(endPeriodHr);
     chosenEndDate.setMinutes(endPeriodMin);
+
+    // console.log("[chosenStartDate, chosenEndDate]", [chosenStartDate, chosenEndDate]);
 
     return[chosenStartDate, chosenEndDate];
 };
@@ -218,8 +236,8 @@ export const addToMyGraphCal = async (context: WebPartContext, eventDetails: any
 };
 
 export const addEvent = async (context: WebPartContext, roomsCalListName: string, eventDetails: any, roomInfo: any) => {
-    //console.log("roomInfo", roomInfo);
-    //console.log("eventDetails", eventDetails);
+    // console.log("roomInfo", roomInfo);
+    // console.log("eventDetails", eventDetails);
     const restUrl = context.pageContext.web.absoluteUrl + `/_api/web/lists/getByTitle('${roomsCalListName}')/items`;
     const body: string = JSON.stringify({
         Title: eventDetails.titleField,
