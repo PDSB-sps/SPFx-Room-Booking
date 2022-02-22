@@ -85,5 +85,8 @@ https://pnp.github.io/sp-dev-fx-controls-react/controls/IFrameDialog/
 4- Run > gulp package-solution 
 
 
+- To Fix binding issues due to node environment changed
+npm rebuild node-sass
+
 
 
