@@ -190,7 +190,7 @@ export const getChosenDate = (startPeriodField: any, endPeriodField: any, formFi
     // chosenEndDate.setHours(endPeriodHr);
     // chosenEndDate.setMinutes(endPeriodMin);
 
-    // A fix for the Feb-Mar issue - the date was sitting the day first in Feb which only have 28 days. So wasn't working for 29,30,31 days of the month
+    // A fix for the Feb-Mar issue - the date was setting the day first in Feb which only have 28 days. So wasn't working for 29,30,31 days of the month
     let chosenStartDate = new Date(dateYear, dateMonth, dateDay);
     chosenStartDate.setHours(startPeriodHr);
     chosenStartDate.setMinutes(startPeriodMin);
