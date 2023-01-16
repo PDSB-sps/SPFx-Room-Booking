@@ -2,7 +2,7 @@ import * as React from 'react';
 import styles from './MergedCalendar.module.scss';
 import roomStyles from './Room.module.scss';
 import { IMergedCalendarProps } from './IMergedCalendarProps';
-import {IDropdownOption, DefaultButton, Panel, IComboBox, IComboBoxOption, MessageBar, MessageBarType, MessageBarButton, Link, Dialog, DialogFooter, DialogType} from '@fluentui/react';
+import {IDropdownOption, DefaultButton, Panel, IComboBox, IComboBoxOption, MessageBar, MessageBarType, MessageBarButton, PanelType, Dialog, DialogFooter, DialogType} from '@fluentui/react';
 import {useBoolean} from '@fluentui/react-hooks';
 
 import {CalendarOperations} from '../Services/CalendarOperations';
@@ -23,6 +23,7 @@ import IRoomDetails from './IRoomDetails/IRoomDetails';
 import IRoomDropdown from './IRoomDropdown/IRoomDropdown';
 import IRoomGuidelines from './IRoomGuidelines/IRoomGuidelines';
 import IRoomsManage from './IRoomsManage/IRoomsManage';
+import IMultiBook from './IMultiBook/IMultiBook';
 
 import toast, { Toaster } from 'react-hot-toast';
 import { IFrameDialog } from "@pnp/spfx-controls-react/lib/IFrameDialog";
@@ -64,6 +65,8 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
   const [roomsCalendar, setRoomsCalendar] = React.useState('Events');
   const [calsVisibility, setCalsVisibility] = React.useState([]);
   const [calMsgErrs, setCalMsgErrs] = React.useState([]);
+
+  const [isOpenMultiBook, { setTrue: openPanelMultiBook, setFalse: dismissPanelMultiBook }] = useBoolean(false);
 
   const ACTIONS = {
     EVENT_DETAILS_TOGGLE : "event-details-toggle",
@@ -512,6 +515,7 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
                 guidelinesList={props.guidelinesList}
                 onRoomsManage={onRoomsManage}
                 iframeState = {iFrameState.iFrameState}
+                openMultiBook = {openPanelMultiBook}
               />   
               <Dialog
                 hidden={!dialogState.dlgDelete}
@@ -697,6 +701,18 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
           </MessageBar>
         </IRoomBook>
         <IPreloader isDataLoading = {isDataLoading} text = "" />
+      </Panel>
+
+      <Panel
+        isOpen={isOpenMultiBook}
+        onDismiss={dismissPanelMultiBook}
+        headerText={'Multiple Booking'}
+        closeButtonAriaLabel="Close"
+        isFooterAtBottom={true}
+        isBlocking={false}
+        type={PanelType.medium}>
+        
+        <IMultiBook />
       </Panel>
 
     </div>

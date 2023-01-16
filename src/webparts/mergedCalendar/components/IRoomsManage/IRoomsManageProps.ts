@@ -7,4 +7,5 @@ export interface IRoomsManageProps{
     guidelinesList: string;
     onRoomsManage: any;   
     iframeState: string; 
+    openMultiBook: any;
 }

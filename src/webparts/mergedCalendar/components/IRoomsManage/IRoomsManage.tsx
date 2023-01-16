@@ -2,6 +2,7 @@ import * as React from 'react';
 import roomStyles from '../Room.module.scss';
 import {CommandBarButton, IIconProps, Link, Icon, IContextualMenuProps, CommandButton} from '@fluentui/react';
 import {IRoomsManageProps} from './IRoomsManageProps';
+import {isUserManage} from '../../Services/WpProperties';
 
 export default function IRoomsManage (props: IRoomsManageProps) {
     
@@ -68,9 +69,13 @@ export default function IRoomsManage (props: IRoomsManageProps) {
             {/* <CommandBarButton iconProps={addIcon} text="Add Room" onClick={() => props.onRoomsManage(newRoomURL)} />
             <CommandBarButton iconProps={addIcon} text="Add Period" onClick={() => props.onRoomsManage(newPeriodURL)}/>
             <CommandBarButton iconProps={addIcon} text="Add Guidelines" onClick={() => props.onRoomsManage(newGuidelinesURL)}/> */}
-            <Link className={roomStyles.siteManage} href={`${props.context.pageContext.web.serverRelativeUrl}/SitePages/Site-Management.aspx`}>
+            {isUserManage ?
+              <CommandBarButton className={roomStyles.siteManage} iconProps={{iconName: 'CalendarYear'}} text="Multiple Booking" onClick={props.openMultiBook} />
+              :
+              <Link className={roomStyles.siteManage} href={`${props.context.pageContext.web.serverRelativeUrl}/SitePages/Site-Management.aspx`}>
                 <Icon iconName='Settings' />Site Management
-            </Link>
+              </Link>
+            }
         </div>
     );
 }
