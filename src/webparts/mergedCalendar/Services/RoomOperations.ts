@@ -11,6 +11,13 @@ export const getRooms = async (context: WebPartContext, roomsList: string) =>{
 
     return results.value;
 };
+export const getRoomInfo = async (context: WebPartContext, roomsList: string, roomId: string) => {
+    console.log("Get Room Info Function");
+    const restUrl = context.pageContext.web.absoluteUrl + `/_api/web/lists/getByTitle('${roomsList}')/items?$filter=Id eq ${roomId}`;
+    const results = await context.spHttpClient.get(restUrl, SPHttpClient.configurations.v1).then(response => response.json());
+
+    return results.value[0];
+};
 
 const adjustLocation = (arr: []): {}[] =>{
     let arrAdj :{}[] = [];

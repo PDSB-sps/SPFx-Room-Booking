@@ -8,6 +8,7 @@ import * as moment from 'moment';
 import { useBoolean } from '@fluentui/react-hooks';
 import {isUserManage} from '../../Services/RoomOperations';
 import { IIconProps, initializeIcons, Icon } from '@fluentui/react';
+import { FontIcon } from '@fluentui/react/lib/Icon';
 
 export default function IRoomBook (props:IRoomBookProps) {
     
@@ -135,6 +136,12 @@ export default function IRoomBook (props:IRoomBookProps) {
             </div>
 
             {props.children}
+
+            {props.roomInfo &&
+                <div className={roomStyles.formComments}>                
+                    <span>{props.roomInfo.OData__Comments}</span>
+                </div>
+            }
 
             <Stack tokens={stackTokens}>
                 <TextField 

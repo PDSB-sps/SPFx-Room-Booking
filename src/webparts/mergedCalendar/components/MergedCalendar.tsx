@@ -10,7 +10,7 @@ import {updateCalSettings} from '../Services/CalendarSettingsOps';
 import {addToMyGraphCal, getMySchoolCalGUID, reRenderCalendars, getLegendChksState, calsErrs} from '../Services/CalendarRequests';
 import {formatEvDetails} from '../Services/EventFormat';
 import {setWpData} from '../Services/WpProperties';
-import {getRooms, getPeriods, getLocationGroup, getGuidelines, getRoomsCalendarName, addEvent, deleteItem, updateEvent, isEventCreator} from '../Services/RoomOperations';
+import {getRooms, getPeriods, getLocationGroup, getGuidelines, getRoomsCalendarName, addEvent, deleteItem, updateEvent, isEventCreator, getRoomInfo} from '../Services/RoomOperations';
 import {isUserManage} from '../Services/RoomOperations';
 
 import ICalendar from './ICalendar/ICalendar';
@@ -267,7 +267,8 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
       getPeriods(props.context, periodsList, evDetails.RoomId, new Date(evDetails.Start), evDetails.PeriodId).then((results)=>{
         setPeriods(results);
       });
-      
+      getRoomInfo(props.context, roomsList, arg.event._def.extendedProps.roomId).then(results => setRoomInfo(results));
+
       setFormField({
         ...formField,
         titleField: evDetails.Title,
