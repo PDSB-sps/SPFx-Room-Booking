@@ -8,7 +8,7 @@ export const getRooms = async (context: WebPartContext, roomsList: string) =>{
     console.log("Get Rooms Function");
     const restUrl = context.pageContext.web.absoluteUrl + `/_api/web/lists/getByTitle('${roomsList}')/items?$orderby=SortOrder asc`;
     const results = await context.spHttpClient.get(restUrl, SPHttpClient.configurations.v1).then(response => response.json());
-
+    console.log("rooms", results.value);
     return results.value;
 };
 export const getRoomInfo = async (context: WebPartContext, roomsList: string, roomId: string) => {
@@ -17,6 +17,19 @@ export const getRoomInfo = async (context: WebPartContext, roomsList: string, ro
     const results = await context.spHttpClient.get(restUrl, SPHttpClient.configurations.v1).then(response => response.json());
 
     return results.value[0];
+};
+
+export const getAllPeriods = async (context: WebPartContext, periodsList: string) =>{
+    console.log("Get All Periods Function");
+    const restUrl = context.pageContext.web.absoluteUrl + `/_api/web/lists/getByTitle('${periodsList}')/items?$orderBy=SortOrder asc`;
+    const results = await context.spHttpClient.get(restUrl, SPHttpClient.configurations.v1).then(response => response.json());
+
+    return results.value.map(item => (
+        {
+            key: item.Id,
+            text: item.Title + '  (' + moment(item.StartTime).format('hh:mm A') + ' - ' + moment(item.EndTime).format('hh:mm A') + ')'
+        }
+    ));
 };
 
 const adjustLocation = (arr: []): {}[] =>{
@@ -111,9 +124,10 @@ export const getPeriods = async (context: WebPartContext, periodsList: string, r
         }
     }
 
-    console.log("resultsEvents.value", resultsEvents.value)
-    console.log("bookedPeriods", bookedPeriods);
-    console.log("selectedPeriod", selectedPeriod);
+    // console.log("resultsEvents.value", resultsEvents.value)
+    // console.log("bookedPeriods", bookedPeriods);
+    // console.log("selectedPeriod", selectedPeriod);
+    console.log("adjustPeriods", adjustPeriods(results.value, bookedPeriods));
 
     return adjustPeriods(results.value, bookedPeriods);
 };

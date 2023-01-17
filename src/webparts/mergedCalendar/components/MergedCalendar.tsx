@@ -10,7 +10,7 @@ import {updateCalSettings} from '../Services/CalendarSettingsOps';
 import {addToMyGraphCal, getMySchoolCalGUID, reRenderCalendars, getLegendChksState, calsErrs} from '../Services/CalendarRequests';
 import {formatEvDetails} from '../Services/EventFormat';
 import {setWpData} from '../Services/WpProperties';
-import {getRooms, getPeriods, getLocationGroup, getGuidelines, getRoomsCalendarName, addEvent, deleteItem, updateEvent, isEventCreator, getRoomInfo} from '../Services/RoomOperations';
+import {getRooms, getPeriods, getAllPeriods, getLocationGroup, getGuidelines, getRoomsCalendarName, addEvent, deleteItem, updateEvent, isEventCreator, getRoomInfo} from '../Services/RoomOperations';
 import {isUserManage} from '../Services/RoomOperations';
 
 import ICalendar from './ICalendar/ICalendar';
@@ -67,6 +67,7 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
   const [calMsgErrs, setCalMsgErrs] = React.useState([]);
 
   const [isOpenMultiBook, { setTrue: openPanelMultiBook, setFalse: dismissPanelMultiBook }] = useBoolean(false);
+  const [allPeriods, setAllPeriods] = React.useState([]);
 
   const ACTIONS = {
     EVENT_DETAILS_TOGGLE : "event-details-toggle",
@@ -147,7 +148,7 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
     getRooms(props.context, roomsList).then((results)=>{
       setRooms(results);
       setFilteredRooms(results);
-    });
+    });    
   },[roomId]);
 
   React.useEffect(()=>{
@@ -482,6 +483,62 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
     };
   };
 
+
+
+  /* Multiple Room Booking */
+  const multiBookPanelOpenHandler = () => {
+    getAllPeriods(props.context, periodsList).then(results => {
+      setAllPeriods(results);
+    });
+    openPanelMultiBook();
+  };
+  //Booking Forms states
+  const [formFieldMultiBk, setFormFieldMultiBk] = React.useState({
+    titleField: "",
+    descpField: "",
+    schoolCycleField : {key: '', text:''}, 
+    schoolCycleDayField : {key: '', text:''}, 
+    periodField : {key: '', text:''},
+    roomField : {key: '', text:''},
+    startDateField : new Date(),
+    endDateField : new Date(),
+    addToCalField: false
+  });
+  //error handeling
+  const [errorMsgFieldMultiBk , setErrorMsgFieldMultiBk] = React.useState({
+    titleField: "",
+    periodField : "",
+  });
+  const resetFieldsMultiBk = () =>{
+    setFormFieldMultiBk({
+      titleField: "",
+      descpField: "",
+      schoolCycleField : {key: '', text:''},
+      schoolCycleDayField : {key: '', text:''},
+      periodField : {key: '', text:''},
+      roomField : {key: '', text:''},
+      startDateField : new Date(),    
+      endDateField : new Date(),    
+      addToCalField: false
+    });
+    setErrorMsgField({
+      titleField: "",
+      periodField : "",
+    });
+  };
+  const onChangeFormFieldMultiBk = (formFieldParam: string) =>{
+    return (event: any, newValue?: any)=>{
+      setFormFieldMultiBk({
+        ...formFieldMultiBk,
+        [formFieldParam]: (newValue === undefined && typeof event === "object") ? event : (typeof newValue === "boolean" ? !!newValue : newValue || ''),
+      });
+      setErrorMsgFieldMultiBk({titleField: "", periodField: ""});
+    };
+  };
+  const checkBookingClickHandler = () => {
+
+  };
+
   return(
     <div className={styles.mergedCalendar}>
 
@@ -515,7 +572,7 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
                 guidelinesList={props.guidelinesList}
                 onRoomsManage={onRoomsManage}
                 iframeState = {iFrameState.iFrameState}
-                openMultiBook = {openPanelMultiBook}
+                openMultiBook = {multiBookPanelOpenHandler}
               />   
               <Dialog
                 hidden={!dialogState.dlgDelete}
@@ -712,7 +769,17 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
         isBlocking={false}
         type={PanelType.medium}>
         
-        <IMultiBook />
+        <IMultiBook 
+          formField = {formFieldMultiBk}
+          errorMsgField = {errorMsgFieldMultiBk}
+          onChangeFormField = {onChangeFormFieldMultiBk}
+          schoolCycleOptions = {[]}
+          schoolCycleDayOptions = {[]}
+          periodOptions = {allPeriods}
+          roomOptions = {rooms.map(room => ({key: room.Id, text: room.Title}))}
+          checkBookingClick = {checkBookingClickHandler}
+          dismissPanelMultiBook = {dismissPanelMultiBook}
+        />
       </Panel>
 
     </div>
