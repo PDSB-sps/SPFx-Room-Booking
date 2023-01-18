@@ -73,37 +73,34 @@ export default function IMultiBook(props: IMultiBookProps) {
                     value={props.formField.endDateField}
                 />
                 <Dropdown 
-                    placeholder="School Cycle" 
+                    placeholder="Select the school cycle 5-10" 
                     label="School Cycle" 
                     required
-                    selectedKey={props.formField.schoolCycleField ? props.formField.schoolCycleField.key : undefined}
+                    selectedKey = {props.schoolCategory === 'Sec' ? props.schoolNum : undefined}
                     options={props.schoolCycleOptions} 
                     onChange={props.onChangeFormField('schoolCycleField')} 
                     errorMessage={props.errorMsgField.schoolCycleField} 
                 /> 
                 <Dropdown 
-                    placeholder="Day of the School Cycle" 
+                    placeholder="Select the day of the school cycle" 
                     label="Day of the School Cycle" 
                     required
-                    selectedKey={props.formField.schoolCycleDayField ? props.formField.schoolCycleDayField.key : undefined}
                     options={props.schoolCycleDayOptions} 
                     onChange={props.onChangeFormField('schoolCycleDayField')} 
                     errorMessage={props.errorMsgField.schoolCycleDayField} 
                 />   
                 <Dropdown 
-                    placeholder="Room" 
+                    placeholder="Select a room" 
                     label="Room" 
                     required
-                    selectedKey={props.formField.roomField ? props.formField.roomField.key : undefined}
                     options={props.roomOptions} 
                     onChange={props.onChangeFormField('roomField')} 
                     errorMessage={props.errorMsgField.roomField} 
                 />
                 <Dropdown 
-                    placeholder="Period" 
+                    placeholder="Select a period" 
                     label="Period" 
                     required
-                    selectedKey={props.formField.periodField ? props.formField.periodField.key : undefined}
                     options={props.periodOptions} 
                     onChange={props.onChangeFormField('periodField')} 
                     errorMessage={props.errorMsgField.periodField} 
@@ -123,5 +120,5 @@ export default function IMultiBook(props: IMultiBookProps) {
             <DefaultButton text="Cancel" onClick={props.dismissPanelMultiBook}  />
         </div>
         </React.Fragment>
-    )
+    );
 }

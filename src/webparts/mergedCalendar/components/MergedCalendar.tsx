@@ -10,7 +10,7 @@ import {updateCalSettings} from '../Services/CalendarSettingsOps';
 import {addToMyGraphCal, getMySchoolCalGUID, reRenderCalendars, getLegendChksState, calsErrs} from '../Services/CalendarRequests';
 import {formatEvDetails} from '../Services/EventFormat';
 import {setWpData} from '../Services/WpProperties';
-import {getRooms, getPeriods, getAllPeriods, getLocationGroup, getGuidelines, getRoomsCalendarName, addEvent, deleteItem, updateEvent, isEventCreator, getRoomInfo} from '../Services/RoomOperations';
+import {getRooms, getPeriods, getAllPeriods, getLocationGroup, getGuidelines, getRoomsCalendarName, addEvent, deleteItem, updateEvent, isEventCreator, getRoomInfo, getSchoolCategory, getSchoolCycles} from '../Services/RoomOperations';
 import {isUserManage} from '../Services/RoomOperations';
 
 import ICalendar from './ICalendar/ICalendar';
@@ -68,6 +68,8 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
 
   const [isOpenMultiBook, { setTrue: openPanelMultiBook, setFalse: dismissPanelMultiBook }] = useBoolean(false);
   const [allPeriods, setAllPeriods] = React.useState([]);
+  const {schoolNum, schoolCategory} = getSchoolCategory(window.location.href);
+  const [cycleDays, setCycleDays] = React.useState([]);
 
   const ACTIONS = {
     EVENT_DETAILS_TOGGLE : "event-details-toggle",
@@ -154,7 +156,7 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
   React.useEffect(()=>{
     getLocationGroup(props.context, roomsList).then((results)=>{
       setLocationGroup(results);
-    });
+    });    
   }, []);
 
   React.useEffect(()=>{
@@ -188,13 +190,11 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
     });
   };
   
-
   const handleAddtoCal = ()=>{
     addToMyGraphCal(props.context).then((result)=>{
       console.log('calendar updated', result);
     });
   };
-
 
   //Booking Forms states
   const [formField, setFormField] = React.useState({
@@ -244,16 +244,14 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
 
       if(formFieldParam === 'dateField' && moment(formField.dateField).format('MM-DD-YYYY') !== moment(event).format('MM-DD-YYYY')){
         setFormField((prevState)=>{
-          return {...prevState, periodField : {key: '', text:'', start:new Date(), end:new Date()}}
-        })
+          return {...prevState, periodField : {key: '', text:'', start:new Date(), end:new Date()}};
+        });
         getPeriods(props.context, periodsList, calculatedRoomId , event, null).then((results)=>{
           setPeriods(results);
         });
       }
     };
   };
-
-  
 
   const handleDateClick = (arg:any) =>{    
     if(arg.event._def.extendedProps.roomId){
@@ -484,13 +482,17 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
   };
 
 
-
   /* Multiple Room Booking */
   const multiBookPanelOpenHandler = () => {
     getAllPeriods(props.context, periodsList).then(results => {
       setAllPeriods(results);
     });
-    openPanelMultiBook();
+    if (schoolCategory === 'Sec'){
+      getSchoolCycles(props.context, schoolNum).then(results => {
+        setCycleDays(results.map(item => ({key: `Day${item}`, text: `Day ${item}`})));
+      });
+    }
+    openPanelMultiBook();    
   };
   //Booking Forms states
   const [formFieldMultiBk, setFormFieldMultiBk] = React.useState({
@@ -533,10 +535,20 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
         [formFieldParam]: (newValue === undefined && typeof event === "object") ? event : (typeof newValue === "boolean" ? !!newValue : newValue || ''),
       });
       setErrorMsgFieldMultiBk({titleField: "", periodField: ""});
+      if (formFieldParam === 'schoolCycleField' && schoolCategory === 'Elem') selectDayCycleHandler(newValue.key);
     };
   };
   const checkBookingClickHandler = () => {
 
+  };
+  const schoolCycleOptions = schoolCategory === 'Elem' 
+    ? [{key: 'E5Day', text: '5 Day'}, {key: 'E10Day', text: '10 Day'}]
+    : [{key: schoolNum, text: 'School Rotary'}];
+
+  const selectDayCycleHandler = (schoolRotary: string) => {
+    getSchoolCycles(props.context, schoolRotary).then(results => {
+      setCycleDays(results.map(item => ({key: `Day${item}`, text: `Day ${item}`})));
+    });
   };
 
   return(
@@ -770,11 +782,14 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
         type={PanelType.medium}>
         
         <IMultiBook 
+          context = {props.context}
           formField = {formFieldMultiBk}
           errorMsgField = {errorMsgFieldMultiBk}
           onChangeFormField = {onChangeFormFieldMultiBk}
-          schoolCycleOptions = {[]}
-          schoolCycleDayOptions = {[]}
+          schoolCategory = {schoolCategory}
+          schoolNum = {schoolNum}
+          schoolCycleOptions = {schoolCycleOptions}
+          schoolCycleDayOptions = {cycleDays}
           periodOptions = {allPeriods}
           roomOptions = {rooms.map(room => ({key: room.Id, text: room.Title}))}
           checkBookingClick = {checkBookingClickHandler}
