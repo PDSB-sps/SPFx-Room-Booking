@@ -8,7 +8,7 @@ export const getRooms = async (context: WebPartContext, roomsList: string) =>{
     console.log("Get Rooms Function");
     const restUrl = context.pageContext.web.absoluteUrl + `/_api/web/lists/getByTitle('${roomsList}')/items?$orderby=SortOrder asc`;
     const results = await context.spHttpClient.get(restUrl, SPHttpClient.configurations.v1).then(response => response.json());
-    console.log("rooms", results.value);
+    // console.log("rooms", results.value);
     return results.value;
 };
 export const getRoomInfo = async (context: WebPartContext, roomsList: string, roomId: string) => {
@@ -335,6 +335,24 @@ export const updateEvent = async (context: WebPartContext, roomsCalListName: str
     if (_data.ok){
         console.log('Event Booking is updated!');
     }
+};
+
+export const getSchoolCategory = (calUrl:string) => {
+    calUrl = "https://pdsb1.sharepoint.com/sites/Rooms/1234/"; // for testing
+    calUrl = calUrl.toLowerCase();
+    const schoolLoc = calUrl.substring(calUrl.indexOf('/rooms/')+7).replace("/","");
+    const schoolLocNum = Number(schoolLoc);
+    if (schoolLocNum){
+        if (schoolLocNum >= 1000 && schoolLocNum <= 2000) return {schoolNum: schoolLoc, schoolCategory: 'Elem'};
+        if (schoolLocNum >= 2001 && schoolLocNum <= 3000) return {schoolNum: schoolLoc, schoolCategory: 'Sec'};
+    }
+    return {schoolNum: schoolLoc, schoolCategory: 'None'};
+};
+export const getSchoolCycles = async (context: WebPartContext, schoolLocNum: string) => {
+    const restUrl = `https://pdsb1.sharepoint.com/sites/Rooms` + `/_api/web/lists/getByTitle('CalendarSettings')/items?$filter=CalName eq '${schoolLocNum}' and CalType eq 'Graph'`;
+    const results = await context.spHttpClient.get(restUrl, SPHttpClient.configurations.v1).then(response => response.json());
+    console.log("school Cycles", results.value);
+    return results.value[0].CycleDays;
 };
 
 export const isEventCreator = async (context: WebPartContext, roomsCalListName: string, eventId: any) =>{
