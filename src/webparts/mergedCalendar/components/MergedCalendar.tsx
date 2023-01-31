@@ -129,8 +129,11 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
   };
   const [eventSourcesState, dispatchEventSources] = React.useReducer(eventSourcesReducer, []);
 
-  const loadLatestCalendars = async (callback?: any) =>{
-    toggleIsDataLoading();
+  const loadLatestCalendars = async (callback?: any, displayPreloader?:boolean) =>{
+    console.log("loadLatestCalendars Function!");
+    
+    if (displayPreloader == undefined) displayPreloader = true;
+    if(displayPreloader) toggleIsDataLoading();
     _calendarOps.displayCalendars(props.context, calSettingsList, currentCalDate, roomId).then((results: any)=>{
       setRoomsCalendar(getRoomsCalendarName(results[0]));
       setCalSettings(results[0]);
@@ -139,7 +142,7 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
       if (calsVisibility.length > 1){
         dispatchEventSources({type: ACTIONS.LOAD_EVENTS_VIS, payload: calsVisibility });
       }
-      toggleIsDataLoading();
+      if(displayPreloader) toggleIsDataLoading();
       setCalMsgErrs(calsErrs);
       callback ? callback() : null;
     });
@@ -162,7 +165,11 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
       setRooms(results);
       setFilteredRooms(results);
     });    
-  },[roomId, currentCalDate]);
+  },[roomId]);
+
+  React.useEffect(()=>{
+    loadLatestCalendars(null, false);
+  },[currentCalDate]);
 
   React.useEffect(()=>{
     getLocationGroup(props.context, roomsList).then((results)=>{

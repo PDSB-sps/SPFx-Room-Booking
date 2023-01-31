@@ -1,19 +1,27 @@
 import { WebPartContext } from "@microsoft/sp-webpart-base";
 import {HttpClientResponse, HttpClient, IHttpClientOptions, MSGraphClient, SPHttpClient} from "@microsoft/sp-http";
 
-import {formatStartDate, formatEndDate} from '../Services/EventFormat';
+import {formatStartDate, formatEndDate, getDatesWindow} from '../Services/EventFormat';
 import {parseRecurrentEvent} from '../Services/RecurrentEventOps';
 
 export const calsErrs : any = [];
 
 const resolveCalUrl = (context: WebPartContext, calType:string, calUrl:string, calName:string, currentDate: string) : string => {
-    let resolvedCalUrl:string,
-        azurePeelSchoolsUrl :string = "https://pdsb1.azure-api.net/peelschools",
-        restApiUrl :string = "/_api/web/lists/getByTitle('"+calName+"')/items",
-        restApiParams :string = "?$select=ID,Title,EventDate,EndDate,Location,Description,fAllDayEvent,fRecurrence,RecurrenceData&$orderby=EventDate desc&$top=300",
-        restApiParamsRoom: string = "?$select=ID,Title,EventDate,EndDate,Location,Description,fAllDayEvent,fRecurrence,RecurrenceData,Status,AddToMyCal,RoomName/ColorCalculated,RoomName/ID,RoomName/Title,Periods/ID,Periods/EndTime,Periods/Title,Periods/StartTime&$expand=RoomName,Periods&$orderby=EventDate desc&$top=1000";
-        //restApiParams :string = "?$select=ID,Title,EventDate,EndDate,Location,Description,fAllDayEvent,fRecurrence,RecurrenceData&$filter=EventDate ge datetime'2019-08-01T00%3a00%3a00'";
-        //$filter=EventDate ge datetime'2019-08-01T00%3a00%3a00'
+    
+    let resolvedCalUrl:string;
+    let restApiUrl :string = "/_api/web/lists/getByTitle('"+calName+"')/items";
+    let restApiParams :string = `?$select=ID,Title,EventDate,EndDate,Location,Description,fAllDayEvent,fRecurrence,RecurrenceData,Category&$top=1000&$orderby=EndDate desc`;
+    let restApiParamsRoom: string = "?$select=ID,Title,EventDate,EndDate,Location,Description,fAllDayEvent,fRecurrence,RecurrenceData,Status,AddToMyCal,RoomName/ColorCalculated,RoomName/ID,RoomName/Title,Periods/ID,Periods/EndTime,Periods/Title,Periods/StartTime&$expand=RoomName,Periods&$orderby=EventDate desc&$top=1000";
+
+    const {dateRangeStart, dateRangeEnd} = getDatesWindow(currentDate);
+
+    let restApiParamsWRange :string = `?$select=ID,Title,EventDate,EndDate,Location,Description,fAllDayEvent,fRecurrence,RecurrenceData,Category&$top=1000&$orderby=EndDate desc&$filter=fRecurrence eq 1 or EventDate ge '${dateRangeStart.toISOString()}' and EventDate le '${dateRangeEnd.toISOString()}'`;
+    let restApiParamsRoomWRange: string = `?$select=ID,Title,EventDate,EndDate,Location,Description,fAllDayEvent,fRecurrence,RecurrenceData,Status,AddToMyCal,RoomName/ColorCalculated,RoomName/ID,RoomName/Title,Periods/ID,Periods/EndTime,Periods/Title,Periods/StartTime&$expand=RoomName,Periods&$orderby=EventDate desc&$top=1000&$filter=fRecurrence eq 1 or EventDate ge '${dateRangeStart.toISOString()}' and EventDate le '${dateRangeEnd.toISOString()}'`;
+    
+    restApiParams = restApiParamsWRange;
+    restApiParamsRoom = restApiParamsRoomWRange;
+
+    let  azurePeelSchoolsUrl :string = "https://pdsb1.azure-api.net/peelschools";
 
     switch (calType){
         case "Internal":
