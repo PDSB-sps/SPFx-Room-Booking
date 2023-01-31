@@ -55,7 +55,7 @@ export const formatEvDetails = (ev:any) : {} =>{
         Status: event._def.extendedProps.status,
         Period: event._def.extendedProps.period,
         PeriodId: event._def.extendedProps.periodId,
-        // Color: event.backgroundColor,
+        RoomColor: event.backgroundColor,
         AddToMyCal: event._def.extendedProps.addToCal,
         Calendar: event._def.extendedProps.calendar,
         Color: event._def.extendedProps.calendarColor
