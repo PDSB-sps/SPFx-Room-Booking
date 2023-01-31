@@ -39,7 +39,7 @@ const resolveCalUrl = (context: WebPartContext, calType:string, calUrl:string, c
     return resolvedCalUrl;
 };
 
-const getGraphCals = (context: WebPartContext, calSettings:{CalType:string, Title:string, CalName:string, CalURL:string}, currentDate: string) : Promise <{}[]> => {	
+const getGraphCals = (context: WebPartContext, calSettings:{CalType:string, Title:string, CalName:string, CalURL:string, BgColorHex: string}, currentDate: string) : Promise <{}[]> => {	
     	
     let graphUrl :string = calSettings.CalURL.substring(32, calSettings.CalURL.length),	
         calEvents : {}[] = [];	
@@ -70,6 +70,8 @@ const getGraphCals = (context: WebPartContext, calSettings:{CalType:string, Titl
                                     _body: result.body.content,
                                     className: "eventHidden",
                                     allDay: result.isAllDay,
+                                    calendar: calSettings.Title,
+                                    calendarColor: calSettings.BgColorHex
                                 });	
                             });	
                         }	
@@ -121,7 +123,7 @@ export const addToMyGraphCal = async (context: WebPartContext) =>{
 
 };
 
-export const getDefaultCals = async (context: WebPartContext, calSettings:{CalType:string, Title:string, CalName:string, CalURL:string}, currentDate: string) : Promise <{}[]> => {
+export const getDefaultCals = async (context: WebPartContext, calSettings:{CalType:string, Title:string, CalName:string, CalURL:string, BgColorHex: string}, currentDate: string) : Promise <{}[]> => {
     let calUrl :string = resolveCalUrl(context, calSettings.CalType, calSettings.CalURL, calSettings.CalName, currentDate),
         calEvents : {}[] = [] ;
 
@@ -149,7 +151,9 @@ export const getDefaultCals = async (context: WebPartContext, calSettings:{CalTy
                         recurr: result.fRecurrence,
                         recurrData: result.RecurrenceData,
                         rrule: result.fRecurrence ? parseRecurrentEvent(result.RecurrenceData, formatStartDate(result.EventDate), formatEndDate(result.EndDate)) : null,
-                        className: "eventHidden"
+                        className: "eventHidden",
+                        calendar: calSettings.Title,
+                        calendarColor: calSettings.BgColorHex
                     });
                 });
             }
