@@ -48,7 +48,8 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
   const [showWeekends, { toggle: toggleshowWeekends }] = useBoolean(props.showWeekends);
   const [listGUID, setListGUID] = React.useState('');
   const [calVisibility, setCalVisibility] = React.useState <{calId: string, calChk: boolean}>({calId: null, calChk: null});
-
+  const [currentCalDate, setCurrentCalDate] = React.useState(new Date().toISOString());
+  
   // Room Booking states
   const [rooms, setRooms] = React.useState([]);
   const [roomId, setRoomId] = React.useState(null);
@@ -67,7 +68,7 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
   const [isFiltered, { setTrue: showFilterWarning, setFalse: hideFilterWarning }] = useBoolean(false);
   const [roomsCalendar, setRoomsCalendar] = React.useState('Events');
   const [calsVisibility, setCalsVisibility] = React.useState([]);
-  const [calMsgErrs, setCalMsgErrs] = React.useState([]);
+  const [calMsgErrs, setCalMsgErrs] = React.useState([]);  
 
   // Multi-booking states
   const [isOpenMultiBook, { setTrue: openPanelMultiBook, setFalse: dismissPanelMultiBook }] = useBoolean(false);
@@ -491,6 +492,11 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
     };
   };
 
+  // Current date passing for window range
+  const passCurrentDate = (currDate: string) => {
+    console.log("passCurrentCalDate function", currDate);
+    setCurrentCalDate(currDate);
+  };
 
   /* Multiple Room Booking */
   const multiBookPanelOpenHandler = () => {
@@ -807,7 +813,8 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
           openPanel={openPanel}
           handleDateClick={handleDateClick}
           context={props.context}
-          listGUID = {listGUID}/>
+          listGUID = {listGUID}
+          passCurrentDate = {passCurrentDate}/>
 
         <ILegendRooms 
           calSettings={calSettings} 
