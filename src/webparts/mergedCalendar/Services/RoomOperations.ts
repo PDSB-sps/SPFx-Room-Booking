@@ -1,7 +1,6 @@
 import {WebPartContext} from "@microsoft/sp-webpart-base";
 import { SPPermission } from "@microsoft/sp-page-context";
 import {SPHttpClient, ISPHttpClientOptions, MSGraphClient} from "@microsoft/sp-http";
-import {formatStartDate, formatEndDate} from '../Services/EventFormat';
 import * as moment from 'moment';
 
 export const getRooms = async (context: WebPartContext, roomsList: string) =>{
@@ -17,19 +16,6 @@ export const getRoomInfo = async (context: WebPartContext, roomsList: string, ro
     const results = await context.spHttpClient.get(restUrl, SPHttpClient.configurations.v1).then(response => response.json());
 
     return results.value[0];
-};
-
-export const getAllPeriods = async (context: WebPartContext, periodsList: string) =>{
-    console.log("Get All Periods Function");
-    const restUrl = context.pageContext.web.absoluteUrl + `/_api/web/lists/getByTitle('${periodsList}')/items?$orderBy=SortOrder asc`;
-    const results = await context.spHttpClient.get(restUrl, SPHttpClient.configurations.v1).then(response => response.json());
-
-    return results.value.map(item => (
-        {
-            key: item.Id,
-            text: item.Title + '  (' + moment(item.StartTime).format('hh:mm A') + ' - ' + moment(item.EndTime).format('hh:mm A') + ')'
-        }
-    ));
 };
 
 const adjustLocation = (arr: []): {}[] =>{
@@ -291,20 +277,20 @@ export const addEvent = async (context: WebPartContext, roomsCalListName: string
 };
 
 export const deleteItem = async (context: WebPartContext, listName: string, itemId: any) => {
-    const restUrl = `${context.pageContext.web.absoluteUrl}/_api/web/lists/getByTitle('${listName}')/items(${itemId})`;
+    const restUrl = `${context.pageContext.web.absoluteUrl}/_api/web/lists/getByTitle('${listName}')/items(${itemId})/recycle`;
     let spOptions: ISPHttpClientOptions = {
         headers:{
             Accept: "application/json;odata=nometadata", 
             "Content-Type": "application/json;odata=nometadata",
             "odata-version": "",
             "IF-MATCH": "*",
-            "X-HTTP-Method": "DELETE"         
+            // "X-HTTP-Method": "DELETE"         
         },
     };
 
     const _data = await context.spHttpClient.post(restUrl, SPHttpClient.configurations.v1, spOptions);
     if (_data.ok){
-        console.log('Item deleted!');
+        console.log('Item is deleted! Please check Recycle Bin to restore it.');
     }
 };
 
@@ -335,24 +321,6 @@ export const updateEvent = async (context: WebPartContext, roomsCalListName: str
     if (_data.ok){
         console.log('Event Booking is updated!');
     }
-};
-
-export const getSchoolCategory = (calUrl:string) => {
-    calUrl = "https://pdsb1.sharepoint.com/sites/Rooms/1234/"; // for testing
-    calUrl = calUrl.toLowerCase();
-    const schoolLoc = calUrl.substring(calUrl.indexOf('/rooms/')+7).replace("/","");
-    const schoolLocNum = Number(schoolLoc);
-    if (schoolLocNum){
-        if (schoolLocNum >= 1000 && schoolLocNum <= 2000) return {schoolNum: schoolLoc, schoolCategory: 'Elem'};
-        if (schoolLocNum >= 2001 && schoolLocNum <= 3000) return {schoolNum: schoolLoc, schoolCategory: 'Sec'};
-    }
-    return {schoolNum: schoolLoc, schoolCategory: 'None'};
-};
-export const getSchoolCycles = async (context: WebPartContext, schoolLocNum: string) => {
-    const restUrl = `https://pdsb1.sharepoint.com/sites/Rooms` + `/_api/web/lists/getByTitle('CalendarSettings')/items?$filter=CalName eq '${schoolLocNum}' and CalType eq 'Graph'`;
-    const results = await context.spHttpClient.get(restUrl, SPHttpClient.configurations.v1).then(response => response.json());
-    console.log("school Cycles", results.value);
-    return results.value[0].CycleDays;
 };
 
 export const isEventCreator = async (context: WebPartContext, roomsCalListName: string, eventId: any) =>{
