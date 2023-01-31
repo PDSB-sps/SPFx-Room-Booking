@@ -13,7 +13,8 @@ export interface IMultiBookProps {
     roomOptions: any;
 
     checkBookingClick: any;
-    dismissPanelMultiBook: any;
+    cancelMultiBook: any;
 
     context: WebPartContext;
+    bookingsGridVisible: boolean;
 }

@@ -3,11 +3,17 @@ import roomStyles from '../Room.module.scss';
 import styles from '../MergedCalendar.module.scss';
 
 import { IMultiBookProps } from './IMultiBookProps';
-import {Stack, TextField, Dropdown, DatePicker, IDatePickerStrings, DayOfWeek, IComboBoxOption, Toggle, PrimaryButton, DefaultButton, Dialog, DialogType, DialogFooter} from '@fluentui/react';
+import {Stack, IStackStyles, IStackProps, TextField, Dropdown, DatePicker, IDatePickerStrings, DayOfWeek, Toggle, PrimaryButton, DefaultButton} from '@fluentui/react';
 
 export default function IMultiBook(props: IMultiBookProps) {
 
     const stackTokens = { childrenGap: 10 };
+    const stackStyles: Partial<IStackStyles> = { root: { width: '100%' } };
+    const columnProps: Partial<IStackProps> = {
+        tokens: { childrenGap: 15 },
+        styles: { root: { width: '50%' } },
+    };
+
     const firstDayOfWeek = DayOfWeek.Sunday;
     const DayPickerStrings: IDatePickerStrings = {
         months: [
@@ -35,18 +41,19 @@ export default function IMultiBook(props: IMultiBookProps) {
         closeButtonAriaLabel: 'Close date picker',
         monthPickerHeaderAriaLabel: '{0}, select to change the year',
         yearPickerHeaderAriaLabel: '{0}, select to change the month',
+        isOutOfBoundsErrorMessage: props.errorMsgField.endDateField,
     };
 
     return(
         <React.Fragment>
         <div className={roomStyles.bookingForm}>
-
             <Stack tokens={stackTokens}>
                 <TextField 
                     label="Title" 
                     required 
                     value={props.formField.titleField} 
                     onChange={props.onChangeFormField('titleField')}
+                    errorMessage={props.errorMsgField.titleField} 
                 />  
                 <TextField 
                     label="Description"
@@ -54,57 +61,68 @@ export default function IMultiBook(props: IMultiBookProps) {
                     value={props.formField.descpField} 
                     onChange={props.onChangeFormField('descpField')}
                 />   
-                <DatePicker
-                    isRequired={true}
-                    firstDayOfWeek={firstDayOfWeek}
-                    strings={DayPickerStrings}
-                    label="Start Date"
-                    ariaLabel="Select a date"
-                    onSelectDate={props.onChangeFormField('startDateField')}
-                    value={props.formField.startDateField}
-                />
-                <DatePicker
-                    isRequired={true}
-                    firstDayOfWeek={firstDayOfWeek}
-                    strings={DayPickerStrings}
-                    label="End Date"
-                    ariaLabel="Select a date"
-                    onSelectDate={props.onChangeFormField('endDateField')}
-                    value={props.formField.endDateField}
-                />
-                <Dropdown 
-                    placeholder="Select the school cycle 5-10" 
-                    label="School Cycle" 
-                    required
-                    selectedKey = {props.schoolCategory === 'Sec' ? props.schoolNum : undefined}
-                    options={props.schoolCycleOptions} 
-                    onChange={props.onChangeFormField('schoolCycleField')} 
-                    errorMessage={props.errorMsgField.schoolCycleField} 
-                /> 
-                <Dropdown 
-                    placeholder="Select the day of the school cycle" 
-                    label="Day of the School Cycle" 
-                    required
-                    options={props.schoolCycleDayOptions} 
-                    onChange={props.onChangeFormField('schoolCycleDayField')} 
-                    errorMessage={props.errorMsgField.schoolCycleDayField} 
-                />   
-                <Dropdown 
-                    placeholder="Select a room" 
-                    label="Room" 
-                    required
-                    options={props.roomOptions} 
-                    onChange={props.onChangeFormField('roomField')} 
-                    errorMessage={props.errorMsgField.roomField} 
-                />
-                <Dropdown 
-                    placeholder="Select a period" 
-                    label="Period" 
-                    required
-                    options={props.periodOptions} 
-                    onChange={props.onChangeFormField('periodField')} 
-                    errorMessage={props.errorMsgField.periodField} 
-                />                      
+            </Stack>
+            <Stack horizontal tokens={stackTokens} styles={stackStyles}>
+                <Stack {...columnProps}>
+                    <DatePicker
+                        isRequired
+                        firstDayOfWeek={firstDayOfWeek}
+                        strings={DayPickerStrings}
+                        label="Start Date"
+                        ariaLabel="Select a date"
+                        onSelectDate={props.onChangeFormField('startDateField')}
+                        value={props.formField.startDateField}
+                        minDate={new Date()}
+                    />
+                    <Dropdown 
+                        placeholder="Select the school cycle 5-10" 
+                        label="School Cycle" 
+                        required
+                        selectedKey = {props.schoolCategory === 'Sec' ? props.schoolNum : undefined}
+                        options={props.schoolCycleOptions} 
+                        onChange={props.onChangeFormField('schoolCycleField')} 
+                        errorMessage={props.errorMsgField.schoolCycleField} 
+                    />
+                    <Dropdown 
+                        placeholder="Select a room" 
+                        label="Room" 
+                        required
+                        options={props.roomOptions} 
+                        onChange={props.onChangeFormField('roomField')} 
+                        errorMessage={props.errorMsgField.roomField} 
+                    />
+                </Stack>
+                <Stack {...columnProps}>
+                    <DatePicker
+                        isRequired
+                        firstDayOfWeek={firstDayOfWeek}
+                        strings={DayPickerStrings}
+                        label="End Date"
+                        ariaLabel="Select a date"
+                        onSelectDate={props.onChangeFormField('endDateField')}
+                        value={props.formField.endDateField}
+                        minDate={new Date(props.formField.startDateField)}
+                        textField={{errorMessage: props.errorMsgField.endDateField}}
+                    />
+                    <Dropdown 
+                            placeholder="Select the day of the school cycle" 
+                            label="Day of the School Cycle" 
+                            required
+                            options={props.schoolCycleDayOptions} 
+                            onChange={props.onChangeFormField('schoolCycleDayField')} 
+                            errorMessage={props.errorMsgField.schoolCycleDayField} 
+                        />
+                    <Dropdown 
+                        placeholder="Select a period" 
+                        label="Period" 
+                        required
+                        options={props.periodOptions} 
+                        onChange={props.onChangeFormField('periodField')} 
+                        errorMessage={props.errorMsgField.periodField} 
+                    />   
+                </Stack>
+            </Stack>
+            <Stack tokens={stackTokens}>
                 <Toggle 
                     label="Add this event's booking to my Calendar" 
                     onText="Yes" 
@@ -112,12 +130,20 @@ export default function IMultiBook(props: IMultiBookProps) {
                     checked={props.formField.addToCalField}
                     onChange={props.onChangeFormField('addToCalField')}
                 />
-                                
             </Stack>
         </div>
         <div>
-            <PrimaryButton text="Check Bookings" onClick={props.checkBookingClick} className={styles.marginR10}/>
-            <DefaultButton text="Cancel" onClick={props.dismissPanelMultiBook}  />
+            {!props.bookingsGridVisible ?
+                <>
+                    <PrimaryButton text="Check Bookings" onClick={props.checkBookingClick} className={styles.marginR10}/>
+                    <DefaultButton text="Cancel" onClick={props.cancelMultiBook}  />
+                </>
+                :
+                <>
+                    <PrimaryButton iconProps={{iconName: 'Refresh'}} text="Reload Bookings" onClick={props.checkBookingClick} className={styles.marginR10}/>
+                </>
+            }
+            
         </div>
         </React.Fragment>
     );
