@@ -1,7 +1,7 @@
 import { WebPartContext } from "@microsoft/sp-webpart-base";
 import {HttpClientResponse, HttpClient, IHttpClientOptions, MSGraphClient, SPHttpClient} from "@microsoft/sp-http";
 
-import {formatStartDate, formatEndDate, getDatesWindow} from '../Services/EventFormat';
+import {formatStartDate, formatEndDate, getDatesWindow, formateTime} from '../Services/EventFormat';
 import {parseRecurrentEvent} from '../Services/RecurrentEventOps';
 
 export const calsErrs : any = [];
@@ -21,8 +21,6 @@ const resolveCalUrl = (context: WebPartContext, calType:string, calUrl:string, c
     restApiParams = restApiParamsWRange;
     restApiParamsRoom = restApiParamsRoomWRange;
 
-    let  azurePeelSchoolsUrl :string = "https://pdsb1.azure-api.net/peelschools";
-
     switch (calType){
         case "Internal":
         case "Rotary":
@@ -35,7 +33,7 @@ const resolveCalUrl = (context: WebPartContext, calType:string, calUrl:string, c
             resolvedCalUrl = context.pageContext.web.absoluteUrl + restApiUrl + restApiParams;
             break;
         case "External":
-            resolvedCalUrl = azurePeelSchoolsUrl + calUrl.substring(calUrl.indexOf('.org/') + 12, calUrl.length) + restApiUrl + restApiParams;
+            resolvedCalUrl = calUrl;
             break;
     }
     return resolvedCalUrl;
@@ -259,11 +257,53 @@ export const getRoomsCal = async (context: WebPartContext, calSettings:{CalType:
     return calEvents;
 };
 
-export const getCalsData = (context: WebPartContext, calSettings:{CalType:string, Title:string, CalName:string, CalURL:string}, currentDate: string, roomId?: number) : Promise <{}[]> => {
+export const getExtCals = async (context: WebPartContext, calSettings:{CalType:string, Title:string, CalName:string, CalURL:string, BgColorHex: string}, currentDate: string, spCalPageSize?: number) : Promise <{}[]> => {
+    
+    const {dateRangeStart, dateRangeEnd} = getDatesWindow(currentDate);
+
+    let calUrl :string = `${calSettings.CalURL}&startdate=${dateRangeStart.toISOString()}&enddate=${dateRangeEnd.toISOString()}`;
+    let calEvents : {}[] = [] ;
+
+    try{
+        const _data = await context.httpClient.get(calUrl, HttpClient.configurations.v1);
+        if (_data.ok){
+            const calResult = await _data.json();
+            if(calResult){
+                console.log("new external cal results", calResult);
+                calResult.map((result:any)=>{
+                    calEvents.push({
+                        id: result.id,
+                        title: result.title,
+                        start: new Date(result.settings.startdate).toISOString(),
+                        end: new Date(result.settings.enddate).toISOString(),
+                        _startTime: formateTime(result.settings.startdate),
+                        _endTime: formateTime(result.settings.enddate),
+                        _body: result.content,
+                        calendar: calSettings.Title,
+                        calendarColor: calSettings.BgColorHex,
+                        allDay: false,
+                        _location: null,
+                        recurr: false,
+                        className: "eventHidden"
+                        
+                    });
+                });
+                console.log("formatted new ext calEvents", calEvents);
+            }
+        }
+    } catch(error){
+        calsErrs.push("New External calendars invalid - " + error);
+    }
+    return calEvents;
+};
+
+export const getCalsData = (context: WebPartContext, calSettings:{CalType:string, Title:string, CalName:string, CalURL:string, BgColorHex: string}, currentDate: string, roomId?: number) : Promise <{}[]> => {
     if(calSettings.CalType == 'Graph'){
         return getGraphCals(context, calSettings, currentDate);
     }else if(calSettings.CalType == 'Room'){
         return getRoomsCal(context, calSettings, currentDate, roomId);
+    }else if ( calSettings.CalType == 'External'){
+        return getExtCals(context, calSettings, currentDate);
     }else{
         return getDefaultCals(context, calSettings, currentDate);
     }

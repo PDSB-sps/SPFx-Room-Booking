@@ -1,8 +1,13 @@
-import * as moment from 'moment';
-
+// import * as moment from 'moment';
+import * as moment from 'moment-timezone'; 
 
 export const formateDate = (ipDate:any) :any => {
     return moment(ipDate).format('YYYY-MM-DD hh:mm A'); 
+};
+
+// only for user's view in the event details dialog
+export const formateTime = (ipDate:any) :any => {
+    return moment.tz(ipDate, "America/Toronto").format('YYYY-MM-DD hh:mm A');
 };
 
 export const formatStartDate = (ipDate:any) : any => {
