@@ -86,14 +86,21 @@ export default function ICalendar(props:ICalendarProps){
 
             // }}
             eventContent = {(eventInfo)=>{
-              //console.log("eventInfo", eventInfo);
-              return (
-                <div className="roomEvent">
-                  {/* <b>{eventInfo.timeText}</b> */}
-                  <div>&nbsp;{eventInfo.event._def.extendedProps.roomTitle} - {eventInfo.event._def.extendedProps.period}</div>
-                  <div><i>&nbsp;{eventInfo.event.title}</i></div>
-                </div>
-              );
+              if (eventInfo.event._def.extendedProps.roomTitle){
+                return(
+                  <div className="roomEvent">
+                    <div>&nbsp;{eventInfo.event._def.extendedProps.roomTitle} - {eventInfo.event._def.extendedProps.period}</div>
+                    <div><i>&nbsp;{eventInfo.event.title}</i></div>
+                  </div>
+                );
+              }else{
+                return(
+                  <div>
+                    <b>{eventInfo.timeText && eventInfo.timeText + ' '}</b>
+                    <i>{eventInfo.event.title}</i>
+                  </div>
+                );
+              }
             }}
 
           />
