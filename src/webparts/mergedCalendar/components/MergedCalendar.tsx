@@ -49,7 +49,7 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
   const [listGUID, setListGUID] = React.useState('');
   const [calVisibility, setCalVisibility] = React.useState <{calId: string, calChk: boolean}>({calId: null, calChk: null});
   const [currentCalDate, setCurrentCalDate] = React.useState(new Date().toISOString());
-  
+
   // Room Booking states
   const [rooms, setRooms] = React.useState([]);
   const [roomId, setRoomId] = React.useState(null);
@@ -131,7 +131,7 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
 
   const loadLatestCalendars = async (callback?: any) =>{
     toggleIsDataLoading();
-    _calendarOps.displayCalendars(props.context, calSettingsList, roomId).then((results: any)=>{
+    _calendarOps.displayCalendars(props.context, calSettingsList, currentCalDate, roomId).then((results: any)=>{
       setRoomsCalendar(getRoomsCalendarName(results[0]));
       setCalSettings(results[0]);
       //setEventSources(results[1]);
@@ -162,7 +162,7 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
       setRooms(results);
       setFilteredRooms(results);
     });    
-  },[roomId]);
+  },[roomId, currentCalDate]);
 
   React.useEffect(()=>{
     getLocationGroup(props.context, roomsList).then((results)=>{

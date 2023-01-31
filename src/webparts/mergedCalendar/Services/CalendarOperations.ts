@@ -6,7 +6,7 @@ import {getCalSettings} from '../Services/CalendarSettingsOps';
 export class CalendarOperations{
     
 
-    public displayCalendars(context: WebPartContext , calSettingsListName:string, roomId?: number): Promise <{}[]>{
+    public displayCalendars(context: WebPartContext , calSettingsListName:string, currentDate: string, roomId?: number): Promise <{}[]>{
         
         console.log("Display Calendar Function");
 
@@ -20,7 +20,7 @@ export class CalendarOperations{
             const dataFetches = settings.map(setting => {
                 // This `return` is needed otherwise `undefined` is returned in this `map()` call.
                 if(setting.ShowCal){
-                    return getCalsData(context, setting, roomId).then((events: any) => {
+                    return getCalsData(context, setting, currentDate, roomId).then((events: any) => {
                         eventSrc = {
                             events: events,
                             color: setting.BgColorHex,

@@ -6,7 +6,7 @@ import {parseRecurrentEvent} from '../Services/RecurrentEventOps';
 
 export const calsErrs : any = [];
 
-const resolveCalUrl = (context: WebPartContext, calType:string, calUrl:string, calName:string) : string => {
+const resolveCalUrl = (context: WebPartContext, calType:string, calUrl:string, calName:string, currentDate: string) : string => {
     let resolvedCalUrl:string,
         azurePeelSchoolsUrl :string = "https://pdsb1.azure-api.net/peelschools",
         restApiUrl :string = "/_api/web/lists/getByTitle('"+calName+"')/items",
@@ -33,7 +33,7 @@ const resolveCalUrl = (context: WebPartContext, calType:string, calUrl:string, c
     return resolvedCalUrl;
 };
 
-const getGraphCals = (context: WebPartContext, calSettings:{CalType:string, Title:string, CalName:string, CalURL:string}) : Promise <{}[]> => {	
+const getGraphCals = (context: WebPartContext, calSettings:{CalType:string, Title:string, CalName:string, CalURL:string}, currentDate: string) : Promise <{}[]> => {	
     	
     let graphUrl :string = calSettings.CalURL.substring(32, calSettings.CalURL.length),	
         calEvents : {}[] = [];	
@@ -43,6 +43,7 @@ const getGraphCals = (context: WebPartContext, calSettings:{CalType:string, Titl
             .then((client :MSGraphClient)=>{	
                 client	
                     .api(graphUrl)	
+                    .top(200)
                     .header('Prefer','outlook.timezone="Eastern Standard Time"')	
                     .get((error, response: any, rawResponse?: any)=>{	
                         if(error){	
@@ -112,9 +113,9 @@ export const addToMyGraphCal = async (context: WebPartContext) =>{
 
 };
 
-const getDefaultCals1 = (context: WebPartContext, calSettings:{CalType:string, Title:string, CalName:string, CalURL:string}) : Promise <{}[]> =>{
+const getDefaultCals1 = (context: WebPartContext, calSettings:{CalType:string, Title:string, CalName:string, CalURL:string}, currentDate: string) : Promise <{}[]> =>{
     
-    let calUrl :string = resolveCalUrl(context, calSettings.CalType, calSettings.CalURL, calSettings.CalName),
+    let calUrl :string = resolveCalUrl(context, calSettings.CalType, calSettings.CalURL, calSettings.CalName, currentDate),
         calEvents : {}[] = [] ;
 
     const myOptions: IHttpClientOptions = {
@@ -154,8 +155,8 @@ const getDefaultCals1 = (context: WebPartContext, calSettings:{CalType:string, T
     
 };
 
-export const getDefaultCals = async (context: WebPartContext, calSettings:{CalType:string, Title:string, CalName:string, CalURL:string}) : Promise <{}[]> => {
-    let calUrl :string = resolveCalUrl(context, calSettings.CalType, calSettings.CalURL, calSettings.CalName),
+export const getDefaultCals = async (context: WebPartContext, calSettings:{CalType:string, Title:string, CalName:string, CalURL:string}, currentDate: string) : Promise <{}[]> => {
+    let calUrl :string = resolveCalUrl(context, calSettings.CalType, calSettings.CalURL, calSettings.CalName, currentDate),
         calEvents : {}[] = [] ;
 
     const myOptions: IHttpClientOptions = {
@@ -197,8 +198,8 @@ export const getDefaultCals = async (context: WebPartContext, calSettings:{CalTy
     return calEvents;
 };
 
-export const getRoomsCal = async (context: WebPartContext, calSettings:{CalType:string, Title:string, CalName:string, CalURL:string}, roomId?: number) : Promise <{}[]> => {
-    let calUrl :string = resolveCalUrl(context, calSettings.CalType, calSettings.CalURL, calSettings.CalName),
+export const getRoomsCal = async (context: WebPartContext, calSettings:{CalType:string, Title:string, CalName:string, CalURL:string}, currentDate: string, roomId?: number) : Promise <{}[]> => {
+    let calUrl :string = resolveCalUrl(context, calSettings.CalType, calSettings.CalURL, calSettings.CalName, currentDate),
         calEvents : {}[] = [] ;
 
     const myOptions: IHttpClientOptions = {
@@ -248,13 +249,13 @@ export const getRoomsCal = async (context: WebPartContext, calSettings:{CalType:
     return calEvents;
 };
 
-export const getCalsData = (context: WebPartContext, calSettings:{CalType:string, Title:string, CalName:string, CalURL:string}, roomId?: number) : Promise <{}[]> => {
+export const getCalsData = (context: WebPartContext, calSettings:{CalType:string, Title:string, CalName:string, CalURL:string}, currentDate: string, roomId?: number) : Promise <{}[]> => {
     if(calSettings.CalType == 'Graph'){
-        return getGraphCals(context, calSettings);
+        return getGraphCals(context, calSettings, currentDate);
     }else if(calSettings.CalType == 'Room'){
-        return getRoomsCal(context, calSettings, roomId);
+        return getRoomsCal(context, calSettings, currentDate, roomId);
     }else{
-        return getDefaultCals(context, calSettings);
+        return getDefaultCals(context, calSettings, currentDate);
     }
 };
 
