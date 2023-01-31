@@ -45,13 +45,15 @@ const getGraphCals = (context: WebPartContext, calSettings:{CalType:string, Titl
     	
     let graphUrl :string = calSettings.CalURL.substring(32, calSettings.CalURL.length),	
         calEvents : {}[] = [];	
+    
+    const {dateRangeStart, dateRangeEnd} = getDatesWindow(currentDate);
+
     return new Promise <{}[]> (async(resolve, reject)=>{	
         context.msGraphClientFactory	
             .getClient()	
             .then((client :MSGraphClient)=>{	
                 client	
-                    .api(graphUrl)	
-                    .top(200)
+                    .api(`${graphUrl}?$filter=start/dateTime ge '${dateRangeStart.toISOString()}' and start/dateTime le '${dateRangeEnd.toISOString()}'&$top=100`)
                     .header('Prefer','outlook.timezone="Eastern Standard Time"')	
                     .get((error, response: any, rawResponse?: any)=>{	
                         if(error){	
@@ -69,7 +71,7 @@ const getGraphCals = (context: WebPartContext, calSettings:{CalType:string, Titl
                                     _location: result.location.displayName,	
                                     _body: result.body.content,
                                     className: "eventHidden",
-                                    allDay: result.isAllDay
+                                    allDay: result.isAllDay,
                                 });	
                             });	
                         }	
