@@ -2,7 +2,8 @@
 import * as moment from 'moment-timezone'; 
 
 export const formateDate = (ipDate:any) :any => {
-    return moment(ipDate).format('YYYY-MM-DD hh:mm A'); 
+    //return moment(ipDate).format('YYYY-MM-DD hh:mm A'); 
+    return moment.tz(ipDate, "America/Toronto").format('YYYY-MM-DD hh:mm A');
 };
 
 // only for user's view in the event details dialog
@@ -39,8 +40,10 @@ export const formatEvDetails = (ev:any) : {} =>{
     evDetails = {
         EventId: event._def.publicId,
         Title: event.title,
-        Start: event.startStr ? formateDate(event.startStr) : "",
-        End: event.endStr ? formateDate(event.endStr) : "",
+        // Start: event.startStr ? formateDate(event.startStr) : "",
+        // End: event.endStr ? formateDate(event.endStr) : "",
+        Start: event._def.extendedProps._startTime ? event._def.extendedProps._startTime : "",
+        End: event._def.extendedProps._endTime ? event._def.extendedProps._endTime : "",
         Location: event._def.extendedProps._location,
         Body: event._def.extendedProps._body ? event._def.extendedProps._body : null,
         AllDay: event.allDay,
