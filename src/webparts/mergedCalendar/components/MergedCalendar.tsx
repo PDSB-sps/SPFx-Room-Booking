@@ -8,9 +8,10 @@ import {useBoolean} from '@fluentui/react-hooks';
 import {CalendarOperations} from '../Services/CalendarOperations';
 import {updateCalSettings} from '../Services/CalendarSettingsOps';
 import {addToMyGraphCal, getMySchoolCalGUID, reRenderCalendars, getLegendChksState, calsErrs} from '../Services/CalendarRequests';
+import {getGraphCalsMultiBook, getAllPeriods, getSchoolCategory, getSchoolCycles, getBookedEvents, mergeBookings, addBooking} from '../Services/MultiBookOperations';
 import {formatEvDetails} from '../Services/EventFormat';
 import {setWpData} from '../Services/WpProperties';
-import {getRooms, getPeriods, getAllPeriods, getLocationGroup, getGuidelines, getRoomsCalendarName, addEvent, deleteItem, updateEvent, isEventCreator, getRoomInfo, getSchoolCategory, getSchoolCycles} from '../Services/RoomOperations';
+import {getRooms, getPeriods, getLocationGroup, getGuidelines, getRoomsCalendarName, addEvent, deleteItem, updateEvent, isEventCreator, getRoomInfo} from '../Services/RoomOperations';
 import {isUserManage} from '../Services/RoomOperations';
 
 import ICalendar from './ICalendar/ICalendar';
@@ -24,6 +25,7 @@ import IRoomDropdown from './IRoomDropdown/IRoomDropdown';
 import IRoomGuidelines from './IRoomGuidelines/IRoomGuidelines';
 import IRoomsManage from './IRoomsManage/IRoomsManage';
 import IMultiBook from './IMultiBook/IMultiBook';
+import IMultiBookList from './IMultiBookList/IMultiBookList';
 
 import toast, { Toaster } from 'react-hot-toast';
 import { IFrameDialog } from "@pnp/spfx-controls-react/lib/IFrameDialog";
@@ -35,18 +37,19 @@ import * as moment from 'moment';
 
 export default function MergedCalendar (props:IMergedCalendarProps) {
   
+  // Calendar states & Event details states
   const _calendarOps = new CalendarOperations();
   const [eventSources, setEventSources] = React.useState([]);
   const [calSettings, setCalSettings] = React.useState([]);
   const [eventDetailsRoom, setEventDetailsRoom] = React.useState(null);
   const [eventDetails, setEventDetails] = React.useState(null);
-
   const [isOpen, { setTrue: openPanel, setFalse: dismissPanel }] = useBoolean(false);
   const [isDataLoading, { toggle: toggleIsDataLoading }] = useBoolean(false);
   const [showWeekends, { toggle: toggleshowWeekends }] = useBoolean(props.showWeekends);
   const [listGUID, setListGUID] = React.useState('');
   const [calVisibility, setCalVisibility] = React.useState <{calId: string, calChk: boolean}>({calId: null, calChk: null});
 
+  // Room Booking states
   const [rooms, setRooms] = React.useState([]);
   const [roomId, setRoomId] = React.useState(null);
   const [roomLoadedId, setRoomLoadedId] = React.useState(roomId);
@@ -66,10 +69,17 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
   const [calsVisibility, setCalsVisibility] = React.useState([]);
   const [calMsgErrs, setCalMsgErrs] = React.useState([]);
 
+  // Multi-booking states
   const [isOpenMultiBook, { setTrue: openPanelMultiBook, setFalse: dismissPanelMultiBook }] = useBoolean(false);
   const [allPeriods, setAllPeriods] = React.useState([]);
   const {schoolNum, schoolCategory} = getSchoolCategory(window.location.href);
   const [cycleDays, setCycleDays] = React.useState([]);
+  const [cycleDaysCalUrl, setCycleDaysCalUrl] = React.useState('');
+  const [mergedBookings, setMergedBookings] = React.useState([]);
+  const [isConflict, setIsConflict] = React.useState(false);
+  const [isCheckBookingClicked, setIsCheckBookingClicked] = React.useState(false);
+  const [hideConfirmMultiDlg, { toggle: toggleConfirmMultiDlg }] = useBoolean(true);
+  const [isMultiBookingDataLoading, { toggle: toggleIsMultiBookingDataLoading }] = useBoolean(false);
 
   const ACTIONS = {
     EVENT_DETAILS_TOGGLE : "event-details-toggle",
@@ -489,7 +499,8 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
     });
     if (schoolCategory === 'Sec'){
       getSchoolCycles(props.context, schoolNum).then(results => {
-        setCycleDays(results.map(item => ({key: `Day${item}`, text: `Day ${item}`})));
+        setCycleDaysCalUrl(results.calUrl);
+        setCycleDays(results.cycleDays.map(item => ({key: `Day${item}`, text: `Day ${item}`})));
       });
     }
     openPanelMultiBook();    
@@ -500,7 +511,7 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
     descpField: "",
     schoolCycleField : {key: '', text:''}, 
     schoolCycleDayField : {key: '', text:''}, 
-    periodField : {key: '', text:''},
+    periodField : {key: '', text:'', start:new Date(), end:new Date()},
     roomField : {key: '', text:''},
     startDateField : new Date(),
     endDateField : new Date(),
@@ -509,37 +520,93 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
   //error handeling
   const [errorMsgFieldMultiBk , setErrorMsgFieldMultiBk] = React.useState({
     titleField: "",
+    schoolCycleField : "",
+    schoolCycleDayField : "",
     periodField : "",
+    roomField : "",
+    startDateField : "",    
+    endDateField : "",    
   });
+  const resetErrorMsgFieldMultiBk = () => {
+    setErrorMsgFieldMultiBk({
+      titleField: "",
+      schoolCycleField : "",
+      schoolCycleDayField : "",
+      periodField : "",
+      roomField : "",
+      startDateField : "",    
+      endDateField : "",    
+    });
+  };
   const resetFieldsMultiBk = () =>{
     setFormFieldMultiBk({
       titleField: "",
       descpField: "",
       schoolCycleField : {key: '', text:''},
       schoolCycleDayField : {key: '', text:''},
-      periodField : {key: '', text:''},
+      periodField : {key: '', text:'', start:new Date(), end:new Date()},
       roomField : {key: '', text:''},
       startDateField : new Date(),    
       endDateField : new Date(),    
       addToCalField: false
     });
-    setErrorMsgField({
-      titleField: "",
-      periodField : "",
-    });
+    resetErrorMsgFieldMultiBk();
+  };
+  const handleErrorMultiBk = (callback:any) =>{
+    let allFieldsValid = true;
+    const fieldsMultiBkMapping = [
+      {"field" : "titleField", value: formFieldMultiBk.titleField, "name" : "Title"},
+      {"field" : "schoolCycleField", value: formFieldMultiBk.schoolCycleField.key, "name" : "School Cycle"},
+      {"field" : "schoolCycleDayField", value: formFieldMultiBk.schoolCycleDayField.key, "name" : "Day of the School Cycle"},
+      {"field" : "periodField", value: formFieldMultiBk.periodField.key, "name" : "Period"},
+      {"field" : "roomField", value: formFieldMultiBk.roomField.key, "name" : "Room"},
+      {"field" : "startDateField", value: formFieldMultiBk.startDateField, "name" : "Start Date"},
+      {"field" : "endDateField", value: formFieldMultiBk.endDateField, "name" : "End Date"}
+    ];
+    for (let fieldMapping of fieldsMultiBkMapping){
+      if (fieldMapping.value == ""){
+        setErrorMsgFieldMultiBk(prevState => {
+          return {
+            ...prevState,
+            [fieldMapping.field] : fieldMapping.name + " Field Required"
+          };
+        });
+        allFieldsValid = false;
+      }else{
+        setErrorMsgFieldMultiBk(prevState => {
+          return {
+            ...prevState,
+            [fieldMapping.field] : ""
+          };
+        });
+      }
+    }
+    if (allFieldsValid) callback();
   };
   const onChangeFormFieldMultiBk = (formFieldParam: string) =>{
     return (event: any, newValue?: any)=>{
-      setFormFieldMultiBk({
-        ...formFieldMultiBk,
-        [formFieldParam]: (newValue === undefined && typeof event === "object") ? event : (typeof newValue === "boolean" ? !!newValue : newValue || ''),
+      setFormFieldMultiBk(prevState => { 
+        return{
+          ...prevState,
+          [formFieldParam]: (newValue === undefined && typeof event === "object") ? event : (typeof newValue === "boolean" ? !!newValue : newValue || ''),
+        };
       });
-      setErrorMsgFieldMultiBk({titleField: "", periodField: ""});
+      setErrorMsgFieldMultiBk(prevState => {
+        return {
+          ...prevState,
+          [formFieldParam] : ""
+        };
+      });
       if (formFieldParam === 'schoolCycleField' && schoolCategory === 'Elem') selectDayCycleHandler(newValue.key);
+      if (formFieldParam === 'startDateField' && formFieldMultiBk.endDateField < new Date(event)) {
+        setFormFieldMultiBk(prevState => { 
+          return{
+            ...prevState,
+            endDateField: new Date(event),
+          };
+        });
+      }
     };
-  };
-  const checkBookingClickHandler = () => {
-
   };
   const schoolCycleOptions = schoolCategory === 'Elem' 
     ? [{key: 'E5Day', text: '5 Day'}, {key: 'E10Day', text: '10 Day'}]
@@ -547,7 +614,92 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
 
   const selectDayCycleHandler = (schoolRotary: string) => {
     getSchoolCycles(props.context, schoolRotary).then(results => {
-      setCycleDays(results.map(item => ({key: `Day${item}`, text: `Day ${item}`})));
+      setCycleDaysCalUrl(results.calUrl);
+      setCycleDays(results.cycleDays.map(item => ({key: `Day${item}`, text: `Day ${item}`})));
+    });
+  };
+
+  const checkBookingClickHandler = () => {
+    handleErrorMultiBk(async()=>{
+      console.log("formFieldMultiBk OK!", formFieldMultiBk);
+      
+      toggleIsMultiBookingDataLoading();
+      
+      const multiBookings = await getGraphCalsMultiBook(props.context, {
+        CalType: 'Graph', 
+        Title: formFieldMultiBk.schoolCycleField.key, 
+        CalName: formFieldMultiBk.schoolCycleField.key, 
+        CalURL: cycleDaysCalUrl
+      }, formFieldMultiBk.startDateField.toISOString(), formFieldMultiBk.endDateField.toISOString(), formFieldMultiBk.schoolCycleDayField.text);
+      
+      const existingBookings = await getBookedEvents(props.context, {
+        CalType: 'Room', 
+        Title: formFieldMultiBk.schoolCycleField.key, 
+        CalName: formFieldMultiBk.schoolCycleField.key, 
+        CalURL: cycleDaysCalUrl
+      }, formFieldMultiBk.roomField.key, formFieldMultiBk.periodField.key, formFieldMultiBk.startDateField.toISOString(), formFieldMultiBk.endDateField.toISOString());
+      
+      const {isConflictBool, mergedBookingsList} = mergeBookings(existingBookings, multiBookings, formFieldMultiBk);
+      
+      setMergedBookings(mergedBookingsList);
+      setIsConflict(isConflictBool);
+      setIsCheckBookingClicked(true);
+      
+      toggleIsMultiBookingDataLoading();
+    });
+  };
+  const cancelBookingClickHandler = () => {
+    dismissPanelMultiBook();
+    resetFieldsMultiBk();
+    setMergedBookings([]);
+    setIsCheckBookingClicked(false);
+  };
+  const updateBookings = (itemIndex, checked) => {
+    setMergedBookings(prevState => {
+      return prevState.map(booking => {
+        if(booking.index === itemIndex){
+          return {...booking, overwrite: checked}
+        }else{
+          return booking;
+        }
+      })
+    });
+  };
+  const mulitBookEventsHandler = () =>{
+
+    if (!hideConfirmMultiDlg) toggleConfirmMultiDlg();
+
+    // console.log("final bookings", mergedBookings);
+    const finalBookings = [];
+    const conflictBookingsIds = [];
+    const finalBookingPromises = []; 
+
+    for (let booking of mergedBookings){
+      if (booking.overwrite){
+        finalBookings.push({
+          titleField: formFieldMultiBk.titleField,
+          descpField: formFieldMultiBk.descpField,
+          periodField: formFieldMultiBk.periodField,
+          dateField: booking.start,
+          addToCalField:formFieldMultiBk.addToCalField
+        });
+      }
+      if (booking.overwrite && booking.conflict){
+        conflictBookingsIds.push(booking.conflictId)
+      }
+    }
+    for (let finalBooking of finalBookings){
+      finalBookingPromises.push(addBooking(props.context, roomsCalendar, finalBooking, {Id: formFieldMultiBk.roomField.key, Title: formFieldMultiBk.roomField.text}));
+    }
+    for (let conflictId of conflictBookingsIds){
+      finalBookingPromises.push(deleteItem(props.context, roomsCalendar, conflictId));
+    }
+    Promise.all(finalBookingPromises).then(values => {
+      const callback = () =>{
+        cancelBookingClickHandler();
+        popToast(`Hurray! Your ${finalBookings.length} booking(s) are successfully added and conflicts resolved!`);
+      };
+      loadLatestCalendars(callback);
     });
   };
 
@@ -792,13 +944,51 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
           schoolCycleDayOptions = {cycleDays}
           periodOptions = {allPeriods}
           roomOptions = {rooms.map(room => ({key: room.Id, text: room.Title}))}
+          cancelMultiBook = {cancelBookingClickHandler}
           checkBookingClick = {checkBookingClickHandler}
-          dismissPanelMultiBook = {dismissPanelMultiBook}
+          bookingsGridVisible = {mergedBookings.length > 0 ? true : false}
         />
+
+        {isCheckBookingClicked && mergedBookings.length === 0 &&
+          <MessageBar messageBarType={MessageBarType.warning} className={styles.marginT20}>
+            Sorry, there are no days to book in the selected range. Please modify your search criteria and try again.
+          </MessageBar>
+        }
+
+        <IPreloader 
+          isDataLoading = {isMultiBookingDataLoading} 
+              text = "Please wait, loading bookings..."
+        />
+        {mergedBookings.length > 0 &&
+          <IMultiBookList 
+            bookingList = {mergedBookings} 
+            updateBookings = {updateBookings}
+            bookEventsHandler = {isConflict ? toggleConfirmMultiDlg : mulitBookEventsHandler}
+            cancelBookingClickHandler = {cancelBookingClickHandler}
+            isConflict = {isConflict}
+          />   
+        }
+
+        <Dialog
+          hidden={hideConfirmMultiDlg}
+          onDismiss={toggleConfirmMultiDlg}
+          dialogContentProps={{type: DialogType.largeHeader, title: 'Overwrite/Skip Bookings', subText: 'Are you sure you want to overwrite existing bookings or skip yours? If not, please click "No" and review your bookings once again.'}}
+          modalProps={{isBlocking: false, styles: { main: { maxWidth: 450 }}}}>
+          <DialogFooter>
+              <PrimaryButton onClick={mulitBookEventsHandler} text="Yes" />
+              <DefaultButton onClick={toggleConfirmMultiDlg} text="No" />
+          </DialogFooter>
+        </Dialog>
+
+        <IPreloader isDataLoading = {isDataLoading} text = "" />
+        
       </Panel>
+
+
 
     </div>
   );
   
   
 }
+
