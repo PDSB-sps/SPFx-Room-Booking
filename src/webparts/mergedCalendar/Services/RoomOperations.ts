@@ -67,11 +67,6 @@ const updatePeriods = (allPeriods: any) => {
     }
     return updatedPeriods;
     
-    //updatedPeriods = bookedPeriods.map((bookedPeriod: any) => getCanBookPeriods(bookedPeriod, allPeriods));
-    //return updatedPeriods.flat();
-
-    // const uniqueUpdatedPeriods = updatedPeriods.flat().filter((v,i,a)=>a.findIndex(t=>(t.key === v.key))===i);
-    // return uniqueUpdatedPeriods;
 };
 
 const adjustPeriods = (arr: [], disabledPeriods: any): {}[] =>{
@@ -118,33 +113,6 @@ export const getPeriods = async (context: WebPartContext, periodsList: string, r
     return adjustPeriods(results.value, bookedPeriods);
 };
 
-// export const getFreePeriods  =  async (context: WebPartContext, periods: any, selectedDate: any, roomId: any) =>{
-//     const restUrlEvents = context.pageContext.web.absoluteUrl + `/_api/web/lists/getByTitle('Events')/items?$filter=RoomNameId eq '${roomId}'`;
-//     const resultsEvents = await context.spHttpClient.get(restUrlEvents, SPHttpClient.configurations.v1).then(response => response.json());
-    
-//     let bookedPeriods : any = [];
-//     let bookingDateDay = moment(selectedDate).format('MM-DD-YYYY');
-//     for (let resultEvent of resultsEvents.value){
-//         if(moment(resultEvent.EventDate).format('MM-DD-YYYY') === bookingDateDay){
-//             bookedPeriods.push(resultEvent.PeriodsId);
-//         }
-//     }
-
-//     let updatedPeriods : any = [];
-//     periods.map((period: any)=>{
-//         updatedPeriods.push({
-//             key: period.key,
-//             text: period.text,
-//             start: period.start,
-//             end: period.end,
-//             order: period.order,
-//             disabled: bookedPeriods.includes(period.key) ? true : false
-//         });
-//     });
-
-//     return updatedPeriods;
-// };
-
 export const getGuidelines = async (context: WebPartContext, guidelinesList: string) =>{
     console.log("Get Guidelines Function");
     const restUrl = context.pageContext.web.absoluteUrl + `/_api/web/lists/getByTitle('${guidelinesList}')/items`;
@@ -178,24 +146,6 @@ export const getChosenDate = (startPeriodField: any, endPeriodField: any, formFi
     const dateDay = currDate.getDate();
     const dateMonth = currDate.getMonth();
     const dateYear = currDate.getFullYear();
-
-    // console.log("dateDay", dateDay);
-    // console.log("dateMonth", dateMonth);
-    // console.log("dateYear", dateYear);
-
-    //let chosenStartDate = new Date();
-    // chosenStartDate.setDate(dateDay);
-    // chosenStartDate.setMonth(dateMonth);
-    // chosenStartDate.setFullYear(dateYear);
-    // chosenStartDate.setHours(startPeriodHr);
-    // chosenStartDate.setMinutes(startPeriodMin);
-
-    // let chosenEndDate = new Date();
-    // chosenEndDate.setDate(dateDay);
-    // chosenEndDate.setMonth(dateMonth);
-    // chosenEndDate.setFullYear(dateYear);
-    // chosenEndDate.setHours(endPeriodHr);
-    // chosenEndDate.setMinutes(endPeriodMin);
 
     // A fix for the Feb-Mar issue - the date was setting the day first in Feb which only have 28 days. So wasn't working for 29,30,31 days of the month
     let chosenStartDate = new Date(dateYear, dateMonth, dateDay);

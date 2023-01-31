@@ -82,9 +82,6 @@ export default function ICalendar(props:ICalendarProps){
             eventClick={props.handleDateClick}
             eventSources = {props.eventSources}
             contentHeight='auto'
-            // eventDidMount = {(eventInfo)=>{
-
-            // }}
             eventContent = {(eventInfo)=>{
               if (eventInfo.event._def.extendedProps.roomTitle){
                 return(
