@@ -102,7 +102,7 @@ export default function IRoomBook (props:IRoomBookProps) {
         subText: 'Are you sure you want to delete this event booking?',
     };
     const [hideDialog, { toggle: toggleHideDialog }] = useBoolean(true);
-    const panelHdrColor = props.bookFormMode === "New" ? props.roomInfo.Colour : props.eventDetailsRoom.Color;
+    const panelHdrColor = props.bookFormMode === "New" ? props.roomInfo.Colour : props.eventDetailsRoom.RoomColor;
 
     //console.log("props.formField", props.formField);
 
