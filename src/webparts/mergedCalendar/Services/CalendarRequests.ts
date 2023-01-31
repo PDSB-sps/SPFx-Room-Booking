@@ -121,48 +121,6 @@ export const addToMyGraphCal = async (context: WebPartContext) =>{
 
 };
 
-const getDefaultCals1 = (context: WebPartContext, calSettings:{CalType:string, Title:string, CalName:string, CalURL:string}, currentDate: string) : Promise <{}[]> =>{
-    
-    let calUrl :string = resolveCalUrl(context, calSettings.CalType, calSettings.CalURL, calSettings.CalName, currentDate),
-        calEvents : {}[] = [] ;
-
-    const myOptions: IHttpClientOptions = {
-        headers : { 
-            'Accept': 'application/json;odata=verbose'
-        }
-    };
-
-    console.log("calURL", calUrl);
-
-    return new Promise <{}[]> (async(resolve, reject) =>{
-        context.httpClient
-            .get(calUrl, HttpClient.configurations.v1, myOptions)
-            .then((response: HttpClientResponse) =>{
-                response.json().then((results:any)=>{
-                    results.d.results.map((result:any)=>{
-                        calEvents.push({
-                            id: result.ID,
-                            title: result.Title,
-                            start: result.fAllDayEvent ? formatStartDate(result.EventDate) : result.EventDate,
-                            end: result.fAllDayEvent ? formatEndDate(result.EndDate) : result.EndDate,
-                            allDay: result.fAllDayEvent,
-                            _location: result.Location,
-                            _body: result.Description,
-                            recurr: result.fRecurrence,
-                            recurrData: result.RecurrenceData,
-                            rrule: result.fRecurrence ? parseRecurrentEvent(result.RecurrenceData, formatStartDate(result.EventDate), formatEndDate(result.EndDate)) : null
-                        });
-                    });
-                    resolve(calEvents);
-                });
-            }).catch((error:any)=>{
-                resolve([]);
-                console.log("Calendar URL error!");
-            });
-    });
-    
-};
-
 export const getDefaultCals = async (context: WebPartContext, calSettings:{CalType:string, Title:string, CalName:string, CalURL:string}, currentDate: string) : Promise <{}[]> => {
     let calUrl :string = resolveCalUrl(context, calSettings.CalType, calSettings.CalURL, calSettings.CalName, currentDate),
         calEvents : {}[] = [] ;
