@@ -151,8 +151,8 @@ export const mergeBookings = (existingBookings, multiBookings, multiBookingsFiel
             let bookingStartDate = multiBookings[i].start;
             let existingBookingStartDate = existingBooking.start.substring(0, existingBooking.start.indexOf('T'));
             if (bookingStartDate === existingBookingStartDate){
-                console.log("bookingStartDate === existingBookingStartDate", bookingStartDate === existingBookingStartDate);
-                console.log("isPeriodConflict fnc", isPeriodConflict(existingBooking, multiBookingsFields.periodField));
+                // console.log("bookingStartDate === existingBookingStartDate", bookingStartDate === existingBookingStartDate);
+                // console.log("isPeriodConflict fnc", isPeriodConflict(existingBooking, multiBookingsFields.periodField));
                 if (isPeriodConflict(existingBooking, multiBookingsFields.periodField)){
                     isConflict = true;
                     mergedBookingsList.push({
@@ -199,8 +199,8 @@ const isPeriodConflict = (period1, period2) => {
     const period1End = moment(period1.end).format('HHmm').toString();
     const period2Start = moment(period2.start).format('HHmm').toString();
     const period2End = moment(period2.end).format('HHmm').toString();
-    console.log("period1Start", "period1End", "period2Start", "period2End");
-    console.log(period1Start, period1End, period2Start, period2End);
+    // console.log("period1Start", "period1End", "period2Start", "period2End");
+    // console.log(period1Start, period1End, period2Start, period2End);
     if (
         period1Start >= period2Start && period1Start <= period2End ||
         period1End >= period2Start && period1End <= period2End ||
