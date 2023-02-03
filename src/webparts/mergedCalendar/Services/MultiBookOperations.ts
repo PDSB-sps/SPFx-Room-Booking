@@ -22,10 +22,14 @@ export const getAllPeriods = async (context: WebPartContext, periodsList: string
 };
 
 export const getSchoolCategory = (calUrl:string) => { // elementary or secondary
-    calUrl = "https://pdsb1.sharepoint.com/sites/Rooms/1234/"; // for testing
+   // calUrl = "https://pdsb1.sharepoint.com/sites/Rooms/1234/"; // for testing
     calUrl = calUrl.toLowerCase();
-    const schoolLoc = calUrl.substring(calUrl.indexOf('/rooms/')+7).replace("/","");
+    let isDemo = calUrl.indexOf('/rooms/') === -1 ?  true : false;
+    let schoolLoc : string;
+    if (isDemo) schoolLoc = calUrl.substring(calUrl.indexOf('/roomsdemo/')+11).replace("/","");
+    else schoolLoc = calUrl.substring(calUrl.indexOf('/rooms/')+7).replace("/","");
     const schoolLocNum = Number(schoolLoc);
+    console.log("schoolLocNum", schoolLocNum);
     if (schoolLocNum){
         if (schoolLocNum >= 1000 && schoolLocNum <= 2000) return {schoolNum: schoolLoc, schoolCategory: 'Elem'};
         if (schoolLocNum >= 2001 && schoolLocNum <= 3000) return {schoolNum: schoolLoc, schoolCategory: 'Sec'};
