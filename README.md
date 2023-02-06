@@ -89,4 +89,44 @@ https://pnp.github.io/sp-dev-fx-controls-react/controls/IFrameDialog/
 npm rebuild node-sass
 
 
+#  Multiple Room Booking
+-> Large Dialog/Panel Implementation -> panel
 
+## Step 1 - Form (before & while entry) 
+1- validation: mandatory fields, endDate > startDate
+2- populate school cycle
+	a- elementary : 5 & 10 days options
+	b- secondary : current school rotart & read-only field
+3- populate recurrence cycle day
+	a- elementary : 5day ? 1|2|3|4|5 : 1|2|3|4|5|6|7|8|9|10 (if hard-coded)
+	b- secondary: get from calendarSettings cycleDays field --> 1,2,3,4
+4- load rooms in the room list (or the already loaded state)
+5- load periods from the periods list (or the already loaded state)
+6- add events booking to my calendar
+
+## Step 2 - Bookings and/or conflicts overview
+### Case 1: no conflicts
+    1- list bookings overview (grid view)
+    2- confirm & cancel btns
+### Case 2: conflicts
+    1- list bookings/conflicts overview (grid view)
+    2- options for override/skip all/individual booking (grid view with checkboxes)
+    3- confirm & cancel btns
+
+## Steps 3 - Booking action (POST)
+    1- showing preloader with user friendly message during: 
+        a- bookings
+        b- delete the prev booking if this an overridde(conflict)
+        c- add to my calendar bookings
+    2- thank you message
+
+
+
+# Changes
+1- Multi-room booking panel + dialog + features
+2- current date window for internal, external & graph
+3- external calendars
+4- event details popup header styling
+5- event slot display fix for regular & room events
+6- recurrent events fixes
+7- delete to recycle bin instead of perm
