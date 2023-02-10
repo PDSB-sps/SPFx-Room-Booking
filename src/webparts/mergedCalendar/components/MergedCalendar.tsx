@@ -925,6 +925,7 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
           onUpdateBookingClick={onUpdateBookingClickHandler}
           roomInfo={roomInfo}
           isCreator = {isCreator}
+          isPeriods = {false}
         >
           <MessageBar 
             className={roomStyles.guidelinesMsg}

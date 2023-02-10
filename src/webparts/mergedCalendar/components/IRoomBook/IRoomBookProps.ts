@@ -14,4 +14,6 @@ export interface IRoomBookProps{
     onDeleteBookingClick: any;
     onUpdateBookingClick: any;
     isCreator: boolean;
+
+    isPeriods: boolean;
 }

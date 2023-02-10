@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {IconButton, Stack, TextField, Dropdown, DatePicker, IDatePickerStrings, DayOfWeek, IComboBoxOption, Toggle, PrimaryButton, DefaultButton, Dialog, DialogType, DialogFooter} from '@fluentui/react';
+import {IconButton, Stack, IStackStyles, TextField, Dropdown, DatePicker, IDatePickerStrings, DayOfWeek, IComboBoxOption, Toggle, PrimaryButton, DefaultButton, Dialog, DialogType, DialogFooter} from '@fluentui/react';
 import styles from '../MergedCalendar.module.scss';
 import roomStyles from '../Room.module.scss';
 import { IRoomBookProps } from './IRoomBookProps';
@@ -47,6 +47,8 @@ export default function IRoomBook (props:IRoomBookProps) {
     };
 
     const stackTokens = { childrenGap: 10 };
+    const stackStyles: Partial<IStackStyles> = { root: { width: '100%' } };
+
     const [firstDayOfWeek, setFirstDayOfWeek] = React.useState(DayOfWeek.Sunday);
     
     const hours: IComboBoxOption[] = [
@@ -172,6 +174,7 @@ export default function IRoomBook (props:IRoomBookProps) {
                     disabled={disabledControl}
                     className={disabledControl ? roomStyles.disabledCtrl : ''}
                 />
+                {props.isPeriods ?
                 <Dropdown 
                     placeholder="Select a period" 
                     label="Period" 
@@ -182,7 +185,45 @@ export default function IRoomBook (props:IRoomBookProps) {
                     errorMessage={props.errorMsgField.periodField} 
                     disabled={disabledControl}
                     className={disabledControl ? roomStyles.disabledCtrl : ''}
-                />                    
+                />     
+                :
+                <>
+                    <Stack horizontal tokens={stackTokens} styles={stackStyles}>
+                        <Dropdown 
+                            placeholder="Hour" 
+                            label="Start Time" 
+                            required
+                            options={hours} 
+                            onChange={props.onChangeFormField('startHourField')} 
+                            errorMessage={props.errorMsgField.startTimeField} 
+                        />  
+                        <Dropdown 
+                            placeholder="Minute" 
+                            label=' '
+                            options={minutes} 
+                            onChange={props.onChangeFormField('startMinField')} 
+                            errorMessage={props.errorMsgField.startTimeField} 
+                        /> 
+                    </Stack>
+                    <Stack horizontal tokens={stackTokens} styles={stackStyles}>
+                        <Dropdown 
+                            placeholder="Hour" 
+                            label="End Time" 
+                            required
+                            options={hours} 
+                            onChange={props.onChangeFormField('endHourField')} 
+                            errorMessage={props.errorMsgField.startTimeField} 
+                        />  
+                        <Dropdown 
+                            placeholder="Minute" 
+                            label=' '
+                            options={minutes} 
+                            onChange={props.onChangeFormField('endMinField')} 
+                            errorMessage={props.errorMsgField.startTimeField} 
+                        /> 
+                    </Stack>
+                </>
+                }              
                 <Toggle 
                     label="Add this event's booking to my Calendar" 
                     onText="Yes" 

@@ -130,3 +130,33 @@ npm rebuild node-sass
 5- event slot display fix for regular & room events
 6- recurrent events fixes
 7- delete to recycle bin instead of perm
+
+
+# Introducing start and end times instead of periods
+1- In the IRoomBook screen, add start & end time fields
+
+
+2- In the wp properties:
+    1- Add  option for selecting periods or free start & end times
+    2- Pick a range - NO
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
