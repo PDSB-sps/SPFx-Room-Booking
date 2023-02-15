@@ -392,8 +392,8 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
   const onEditBookingClickHandler = () =>{
     setBookFormMode('Edit');
   };
-  const onDeleteBookingClickHandler = (eventIdParam: any) =>{
-    deleteItem(props.context, roomsCalendar, eventIdParam).then(()=>{
+  const onDeleteBookingClickHandler = (eventDetailsParam: any) =>{
+    deleteItem(props.context, roomsCalendar, eventDetailsParam).then((deletedData)=>{
       const callback = () =>{
         dismissPanelBook();
         popToast('The Event Booking is successfully deleted!');   
@@ -401,13 +401,13 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
       loadLatestCalendars(callback);
     });
   };
-  const onUpdateBookingClickHandler = (eventIdParam: any) =>{
+  const onUpdateBookingClickHandler = (eventDetailsParam: any) =>{
     getPeriods(props.context, periodsList, eventDetailsRoom.RoomId, formField.dateField, eventDetailsRoom.PeriodId).then((results: any)=>{
       setPeriods(results);
       
       let seletedPeriod = results.filter(item => item.key === formField.periodField.key);
       if (!seletedPeriod[0].disabled){          
-        updateEvent(props.context, roomsCalendar, eventIdParam, formField, eventDetailsRoom).then(()=>{
+        updateEvent(props.context, roomsCalendar, eventDetailsParam, formField, eventDetailsRoom).then(()=>{
           const callback = () =>{
             dismissPanelBook();
             popToast('Event Booking is successfully updated!');
@@ -925,7 +925,7 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
           onUpdateBookingClick={onUpdateBookingClickHandler}
           roomInfo={roomInfo}
           isCreator = {isCreator}
-          isPeriods = {false}
+          isPeriods = {true}
         >
           <MessageBar 
             className={roomStyles.guidelinesMsg}

@@ -126,7 +126,7 @@ export default function IRoomBook (props:IRoomBookProps) {
                 }
                 {props.bookFormMode === "Edit" &&
                     <div className={roomStyles.editDeleteBtns}>
-                        <PrimaryButton className={roomStyles.editBtn} iconProps={checkIcon} title="Update Booking" ariaLabel="Update Booking" onClick={() => props.onUpdateBookingClick(props.eventDetailsRoom.EventId)} />
+                        <PrimaryButton className={roomStyles.editBtn} iconProps={checkIcon} title="Update Booking" ariaLabel="Update Booking" onClick={() => props.onUpdateBookingClick(props.eventDetailsRoom)} />
                     </div>
                 }
                 {props.bookFormMode === "View" && ( props.isCreator || isUserManage ) &&
@@ -232,12 +232,12 @@ export default function IRoomBook (props:IRoomBookProps) {
                     onChange={props.onChangeFormField('addToCalField')}
                     disabled={disabledControl}
                 />
-                {props.bookFormMode === 'Edit' && props.formField.addToCalField &&
+                {/* {props.bookFormMode === 'Edit' && props.formField.addToCalField &&
                     <p className={roomStyles.eventWarning}>
                         <Icon className={roomStyles.eventWarningIcon} iconName='Info'/> 
                         <span>Please note that by updating this event, this will a add new event to your <i>personal calendar</i>. You will have to manually delete the old one.</span>
                     </p>
-                }                     
+                }                      */}
             </Stack>
         </div>
         <div>
@@ -248,7 +248,7 @@ export default function IRoomBook (props:IRoomBookProps) {
                 modalProps={modelProps}
             >
                 <DialogFooter>
-                    <PrimaryButton onClick={() => props.onDeleteBookingClick(props.eventDetailsRoom.EventId)} text="Yes" />
+                    <PrimaryButton onClick={() => props.onDeleteBookingClick(props.eventDetailsRoom)} text="Yes" />
                     <DefaultButton onClick={toggleHideDialog} text="No" />
                 </DialogFooter>
             </Dialog>
@@ -257,7 +257,7 @@ export default function IRoomBook (props:IRoomBookProps) {
                 <PrimaryButton text="Book" onClick={props.onNewBookingClick} className={styles.marginR10}/>
             }            
             {props.bookFormMode === "Edit" &&
-                <PrimaryButton text="Update" onClick={() => props.onUpdateBookingClick(props.eventDetailsRoom.EventId)} className={styles.marginR10}/>
+                <PrimaryButton text="Update" onClick={() => props.onUpdateBookingClick(props.eventDetailsRoom)} className={styles.marginR10}/>
             }
             <DefaultButton text="Cancel" onClick={props.dismissPanelBook}  />
         </div>

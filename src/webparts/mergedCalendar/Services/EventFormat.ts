@@ -58,7 +58,8 @@ export const formatEvDetails = (ev:any) : {} =>{
         RoomColor: event.backgroundColor,
         AddToMyCal: event._def.extendedProps.addToCal,
         Calendar: event._def.extendedProps.calendar,
-        Color: event._def.extendedProps.calendarColor
+        Color: event._def.extendedProps.calendarColor,
+        GraphId: event._def.extendedProps.graphId
     };
 
     return evDetails;
