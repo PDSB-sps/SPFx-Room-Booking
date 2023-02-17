@@ -610,6 +610,16 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
     }
     if (allFieldsValid) callback();
   };
+  const schoolCycleOptions = schoolCategory === 'Elem' 
+    ? [{key: 'E5Day', text: '5 Day'}, {key: 'E10Day', text: '10 Day'}]
+    : [{key: schoolNum, text: 'School Rotary'}];
+
+  const selectDayCycleHandler = (schoolRotary: string) => {
+    getSchoolCycles(props.context, schoolRotary).then(results => {
+      setCycleDaysCalUrl(results.calUrl);
+      setCycleDays(results.cycleDays.map(item => ({key: `Day${item}`, text: `Day ${item}`})));
+    });
+  };
   const onChangeFormFieldMultiBk = (formFieldParam: string) =>{
     return (event: any, newValue?: any)=>{
       setFormFieldMultiBk(prevState => { 
@@ -635,16 +645,7 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
       }
     };
   };
-  const schoolCycleOptions = schoolCategory === 'Elem' 
-    ? [{key: 'E5Day', text: '5 Day'}, {key: 'E10Day', text: '10 Day'}]
-    : [{key: schoolNum, text: 'School Rotary'}];
-
-  const selectDayCycleHandler = (schoolRotary: string) => {
-    getSchoolCycles(props.context, schoolRotary).then(results => {
-      setCycleDaysCalUrl(results.calUrl);
-      setCycleDays(results.cycleDays.map(item => ({key: `Day${item}`, text: `Day ${item}`})));
-    });
-  };
+  
 
   const checkBookingClickHandler = () => {
     handleErrorMultiBk(async()=>{
@@ -685,11 +686,11 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
     setMergedBookings(prevState => {
       return prevState.map(booking => {
         if(booking.index === itemIndex){
-          return {...booking, overwrite: checked}
+          return {...booking, overwrite: checked};
         }else{
           return booking;
         }
-      })
+      });
     });
   };
   const mulitBookEventsHandler = () =>{
@@ -712,7 +713,7 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
         });
       }
       if (booking.overwrite && booking.conflict){
-        conflictBookingsIds.push(booking.conflictId)
+        conflictBookingsIds.push(booking.conflictId);
       }
     }
     for (let finalBooking of finalBookings){

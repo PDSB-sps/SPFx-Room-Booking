@@ -142,6 +142,23 @@ export const getBookedEvents =
     return calEvents;
 };
 
+const isPeriodConflict = (period1, period2) => {
+    const period1Start = moment(period1.start).format('HHmm').toString();
+    const period1End = moment(period1.end).format('HHmm').toString();
+    const period2Start = moment(period2.start).format('HHmm').toString();
+    const period2End = moment(period2.end).format('HHmm').toString();
+    // console.log("period1Start", "period1End", "period2Start", "period2End");
+    // console.log(period1Start, period1End, period2Start, period2End);
+    if (
+        period1Start >= period2Start && period1Start <= period2End ||
+        period1End >= period2Start && period1End <= period2End ||
+        period1Start <= period2Start && period1End >= period2End 
+     ){
+        return true;
+    }
+    return false;
+};
+
 export const mergeBookings = (existingBookings, multiBookings, multiBookingsFields) => {
     console.log("existingBookings", existingBookings);
     console.log("multiBookings", multiBookings);
@@ -198,22 +215,7 @@ export const mergeBookings = (existingBookings, multiBookings, multiBookingsFiel
     return {isConflictBool, mergedBookingsList};
 };
 
-const isPeriodConflict = (period1, period2) => {
-    const period1Start = moment(period1.start).format('HHmm').toString();
-    const period1End = moment(period1.end).format('HHmm').toString();
-    const period2Start = moment(period2.start).format('HHmm').toString();
-    const period2End = moment(period2.end).format('HHmm').toString();
-    // console.log("period1Start", "period1End", "period2Start", "period2End");
-    // console.log(period1Start, period1End, period2Start, period2End);
-    if (
-        period1Start >= period2Start && period1Start <= period2End ||
-        period1End >= period2Start && period1End <= period2End ||
-        period1Start <= period2Start && period1End >= period2End 
-     ){
-        return true;
-    }
-    return false;
-}
+
 
 export const addBookingXX = async (context: WebPartContext, roomsCalListName: string, formFields: any, roomInfo: any) => {
     // console.log("roomInfo", roomInfo);
@@ -253,13 +255,7 @@ export const addBookingXX = async (context: WebPartContext, roomsCalListName: st
 };
 
 
-export const addBooking = async (context: WebPartContext, roomsCalListName: string, formFields: any, roomInfo: any) => {
-    if(formFields.addToCalField){
-        return addGraphSPBooking(context, roomsCalListName, formFields, roomInfo);
-    }else{
-        return addSPBooking(context, roomsCalListName, formFields, roomInfo);
-    }
-};
+
 const addSPBooking = async (context: WebPartContext, roomsCalListName: string, formFields: any, roomInfo: any, graphID?:string) => {
     
     const periodStartTime = formFields.periodField.start;
@@ -320,4 +316,11 @@ const addGraphSPBooking = async (context: WebPartContext, roomsCalListName: stri
     const spPostResponse = await addSPBooking(context, roomsCalListName, formFields, roomInfo, graphPostResponse.id);
     
     return Promise.all([graphPostResponse, spPostResponse]);
+};
+export const addBooking = async (context: WebPartContext, roomsCalListName: string, formFields: any, roomInfo: any) => {
+    if(formFields.addToCalField){
+        return addGraphSPBooking(context, roomsCalListName, formFields, roomInfo);
+    }else{
+        return addSPBooking(context, roomsCalListName, formFields, roomInfo);
+    }
 };

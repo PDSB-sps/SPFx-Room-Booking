@@ -282,13 +282,6 @@ export const updateEventXX = async (context: WebPartContext, roomsCalListName: s
 };
 
 // Add Event (SP & Graph)
-export const addEvent = async (context: WebPartContext, roomsCalListName: string, formFields: any, roomInfo: any) => {
-    if(formFields.addToCalField){
-        return addGraphSPEvent(context, roomsCalListName, formFields, roomInfo);
-    }else{
-        return addSPEvent(context, roomsCalListName, formFields, roomInfo);
-    }
-};
 const addSPEvent = async (context: WebPartContext, roomsCalListName: string, formFields: any, roomInfo: any, graphID?:string) => {
     const restUrl = context.pageContext.web.absoluteUrl + `/_api/web/lists/getByTitle('${roomsCalListName}')/items`;
     const body: string = JSON.stringify({
@@ -340,7 +333,7 @@ const addGraphSPEvent = async (context: WebPartContext, roomsCalListName: string
                     "name": attendee.text,
                     "address": attendee.secondaryText
                 }
-            }
+            };
         })
     };
 
@@ -350,20 +343,47 @@ const addGraphSPEvent = async (context: WebPartContext, roomsCalListName: string
     
     return Promise.all([graphPostResponse, spPostResponse]);
 };
-
-// Update Event (SP & Graph)
-export const updateEvent = async (context: WebPartContext, roomsCalListName: string, itemDetails: any, eventDetails: any, eventDetailsRoom: any) => {
-    if(eventDetails.addToCalField){
-        return updateGraphSPEvent(context, roomsCalListName, itemDetails, eventDetails, eventDetailsRoom);
+export const addEvent = async (context: WebPartContext, roomsCalListName: string, formFields: any, roomInfo: any) => {
+    if(formFields.addToCalField){
+        return addGraphSPEvent(context, roomsCalListName, formFields, roomInfo);
     }else{
-        const spResponse = await updateSPEvent(context, roomsCalListName, itemDetails, eventDetails, eventDetailsRoom, null);
-        if (itemDetails.GraphId){
-            const graphResponse = await deleteGraphItem(context, itemDetails.GraphId);
-            return Promise.all([spResponse, graphResponse]);
-        }
-        return spResponse;
+        return addSPEvent(context, roomsCalListName, formFields, roomInfo);
     }
 };
+
+// Delete Event (SP & Graph)
+const deleteSPItem = async (context: WebPartContext, listName: string, itemId: any) => {
+    const restUrl = `${context.pageContext.web.absoluteUrl}/_api/web/lists/getByTitle('${listName}')/items(${itemId})/recycle`;
+    let spOptions: ISPHttpClientOptions = {
+        headers:{
+            Accept: "application/json;odata=nometadata", 
+            "Content-Type": "application/json;odata=nometadata",
+            "odata-version": "",
+            "IF-MATCH": "*",
+            // "X-HTTP-Method": "DELETE"         
+        },
+    };
+
+    const _data = await context.spHttpClient.post(restUrl, SPHttpClient.configurations.v1, spOptions);
+    console.log("deleteSPItem data", _data);
+    if (_data.ok){
+        console.log('Item is deleted! Please check Recycle Bin to restore it.');
+    }
+    return _data;
+};
+const deleteGraphItem = async (context: WebPartContext, itemId: any) => {
+    const grapClient = await context.msGraphClientFactory.getClient();
+    const _data = await grapClient.api(`/me/events/${itemId}`).delete();
+    console.log('Graph Item is deleted from outlook calendar!', _data);
+    return _data;
+};
+export const deleteItem = async (context: WebPartContext, listName: string, itemDetails: any) => {
+    const spDeleteResp = await deleteSPItem(context, listName, itemDetails.EventId);
+    const grphDeleteResp = itemDetails.GraphId ? await deleteGraphItem(context, itemDetails.GraphId) : null;
+    return Promise.all([spDeleteResp, grphDeleteResp]);
+};
+
+// Update Event (SP & Graph)
 const updateSPEvent = async (context: WebPartContext, roomsCalListName: string, itemDetails: any, eventDetails: any, eventDetailsRoom: any, graphID?:any) => {
     const restUrl = `${context.pageContext.web.absoluteUrl}/_api/web/lists/getByTitle('${roomsCalListName}')/items(${itemDetails.EventId})`,
         body: string = JSON.stringify({
@@ -417,7 +437,7 @@ const updateGraphSPEvent = async (context: WebPartContext, roomsCalListName: str
                     "name": attendee.text,
                     "address": attendee.secondaryText
                 }
-            }
+            };
         })
     };
 
@@ -429,38 +449,20 @@ const updateGraphSPEvent = async (context: WebPartContext, roomsCalListName: str
 
     return Promise.all([graphPostResponse, spPostResponse]);
 };
-
-// Delete Event (SP & Graph)
-export const deleteItem = async (context: WebPartContext, listName: string, itemDetails: any) => {
-    const spDeleteResp = await deleteSPItem(context, listName, itemDetails.EventId);
-    const grphDeleteResp = itemDetails.GraphId ? await deleteGraphItem(context, itemDetails.GraphId) : null;
-    return Promise.all([spDeleteResp, grphDeleteResp]);
-};
-const deleteSPItem = async (context: WebPartContext, listName: string, itemId: any) => {
-    const restUrl = `${context.pageContext.web.absoluteUrl}/_api/web/lists/getByTitle('${listName}')/items(${itemId})/recycle`;
-    let spOptions: ISPHttpClientOptions = {
-        headers:{
-            Accept: "application/json;odata=nometadata", 
-            "Content-Type": "application/json;odata=nometadata",
-            "odata-version": "",
-            "IF-MATCH": "*",
-            // "X-HTTP-Method": "DELETE"         
-        },
-    };
-
-    const _data = await context.spHttpClient.post(restUrl, SPHttpClient.configurations.v1, spOptions);
-    console.log("deleteSPItem data", _data)
-    if (_data.ok){
-        console.log('Item is deleted! Please check Recycle Bin to restore it.');
+export const updateEvent = async (context: WebPartContext, roomsCalListName: string, itemDetails: any, eventDetails: any, eventDetailsRoom: any) => {
+    if(eventDetails.addToCalField){
+        return updateGraphSPEvent(context, roomsCalListName, itemDetails, eventDetails, eventDetailsRoom);
+    }else{
+        const spResponse = await updateSPEvent(context, roomsCalListName, itemDetails, eventDetails, eventDetailsRoom, null);
+        if (itemDetails.GraphId){
+            const graphResponse = await deleteGraphItem(context, itemDetails.GraphId);
+            return Promise.all([spResponse, graphResponse]);
+        }
+        return spResponse;
     }
-    return _data;
 };
-const deleteGraphItem = async (context: WebPartContext, itemId: any) => {
-    const grapClient = await context.msGraphClientFactory.getClient();
-    const _data = await grapClient.api(`/me/events/${itemId}`).delete();
-    console.log('Graph Item is deleted from outlook calendar!', _data);
-    return _data;
-};
+
+
 
 export const isEventCreator = async (context: WebPartContext, roomsCalListName: string, eventId: any) =>{
     const currUserId = context.pageContext.legacyPageContext["userId"];
