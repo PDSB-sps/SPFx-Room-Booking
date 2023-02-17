@@ -22,14 +22,14 @@ export const getAllPeriods = async (context: WebPartContext, periodsList: string
 };
 
 export const getSchoolCategory = (calUrl:string) => { // elementary or secondary
-   // calUrl = "https://pdsb1.sharepoint.com/sites/Rooms/1234/"; // for testing
+    calUrl = "https://pdsb1.sharepoint.com/sites/Rooms/1234/"; // for testing
     calUrl = calUrl.toLowerCase();
     let isDemo = calUrl.indexOf('/rooms/') === -1 ?  true : false;
     let schoolLoc : string;
     if (isDemo) schoolLoc = calUrl.substring(calUrl.indexOf('/roomsdemo/')+11).replace("/","");
     else schoolLoc = calUrl.substring(calUrl.indexOf('/rooms/')+7).replace("/","");
     const schoolLocNum = Number(schoolLoc);
-    console.log("schoolLocNum", schoolLocNum);
+    //console.log("schoolLocNum", schoolLocNum);
     if (schoolLocNum){
         if (schoolLocNum >= 1000 && schoolLocNum <= 2000) return {schoolNum: schoolLoc, schoolCategory: 'Elem'};
         if (schoolLocNum >= 2001 && schoolLocNum <= 3000) return {schoolNum: schoolLoc, schoolCategory: 'Sec'};
@@ -215,22 +215,22 @@ const isPeriodConflict = (period1, period2) => {
     return false;
 }
 
-export const addBooking = async (context: WebPartContext, roomsCalListName: string, eventDetails: any, roomInfo: any) => {
-    console.log("roomInfo", roomInfo);
-    console.log("eventDetails", eventDetails);
-    const periodStartTime = eventDetails.periodField.start;
-    const periodEndTime = eventDetails.periodField.end;
+export const addBookingXX = async (context: WebPartContext, roomsCalListName: string, formFields: any, roomInfo: any) => {
+    // console.log("roomInfo", roomInfo);
+    // console.log("formFields", formFields);
+    const periodStartTime = formFields.periodField.start;
+    const periodEndTime = formFields.periodField.end;
     
     const restUrl = context.pageContext.web.absoluteUrl + `/_api/web/lists/getByTitle('${roomsCalListName}')/items`;
     const body: string = JSON.stringify({
-        Title: eventDetails.titleField,
-        Description: eventDetails.descpField,
-        EventDate: eventDetails.dateField + periodStartTime.substring(periodStartTime.indexOf('T')),
-        EndDate: eventDetails.dateField + periodEndTime.substring(periodEndTime.indexOf('T')),
-        PeriodsId: eventDetails.periodField.key,
+        Title: formFields.titleField,
+        Description: formFields.descpField,
+        EventDate: formFields.dateField + periodStartTime.substring(periodStartTime.indexOf('T')),
+        EndDate: formFields.dateField + periodEndTime.substring(periodEndTime.indexOf('T')),
+        PeriodsId: formFields.periodField.key,
         RoomNameId: roomInfo.Id,
         Location: roomInfo.Title,
-        AddToMyCal: eventDetails.addToCalField
+        AddToMyCal: formFields.addToCalField
     });
     const spOptions: ISPHttpClientOptions = {
         headers:{
@@ -245,9 +245,79 @@ export const addBooking = async (context: WebPartContext, roomsCalListName: stri
         console.log('New Event is added!');
     }
 
-    if(eventDetails.addToCalField){
-        addToMyGraphCal(context, eventDetails, roomInfo).then(()=>{
+    if(formFields.addToCalField){
+        addToMyGraphCal(context, formFields, roomInfo).then(()=>{
             console.log('Room added to My Calendar!');
         });
     }
+};
+
+
+export const addBooking = async (context: WebPartContext, roomsCalListName: string, formFields: any, roomInfo: any) => {
+    if(formFields.addToCalField){
+        return addGraphSPBooking(context, roomsCalListName, formFields, roomInfo);
+    }else{
+        return addSPBooking(context, roomsCalListName, formFields, roomInfo);
+    }
+};
+const addSPBooking = async (context: WebPartContext, roomsCalListName: string, formFields: any, roomInfo: any, graphID?:string) => {
+    
+    const periodStartTime = formFields.periodField.start;
+    const periodEndTime = formFields.periodField.end;
+
+    const restUrl = context.pageContext.web.absoluteUrl + `/_api/web/lists/getByTitle('${roomsCalListName}')/items`;
+    const body: string = JSON.stringify({
+        Title: formFields.titleField,
+        Description: formFields.descpField,
+        EventDate: formFields.dateField + periodStartTime.substring(periodStartTime.indexOf('T')),
+        EndDate: formFields.dateField + periodEndTime.substring(periodEndTime.indexOf('T')),
+        PeriodsId: formFields.periodField.key,
+        RoomNameId: roomInfo.Id,
+        Location: roomInfo.Title,
+        AddToMyCal: formFields.addToCalField,
+        GraphID: graphID
+    });
+    const spOptions: ISPHttpClientOptions = {
+        headers:{
+            Accept: "application/json;odata=nometadata", 
+            "Content-Type": "application/json;odata=nometadata",
+            "odata-version": ""
+        },
+        body: body
+    };
+    const _data = await context.spHttpClient.post(restUrl, SPHttpClient.configurations.v1, spOptions);
+    if(_data.ok){
+        console.log('New SP Event is added!');
+    }
+    return _data;
+};
+const addGraphSPBooking = async (context: WebPartContext, roomsCalListName: string, formFields: any, roomInfo: any) => {
+    
+    const periodStartTime = formFields.periodField.start;
+    const periodEndTime = formFields.periodField.end;
+
+    const event = {
+        "subject": formFields.titleField,
+        "body": {
+            "contentType": "HTML",
+            "content": formFields.descpField
+        },
+        "start": {
+            "dateTime": formFields.dateField + periodStartTime.substring(periodStartTime.indexOf('T')),
+            "timeZone": "Eastern Standard Time"
+        },
+        "end": {
+            "dateTime": formFields.dateField + periodEndTime.substring(periodEndTime.indexOf('T')),
+            "timeZone": "Eastern Standard Time"
+        },
+        "location": {
+            "displayName": roomInfo.Title + ' - ' + formFields.periodField.text
+        },
+    };
+
+    const grapClient = await context.msGraphClientFactory.getClient();
+    const graphPostResponse = await grapClient.api("/me/events").post(event);
+    const spPostResponse = await addSPBooking(context, roomsCalListName, formFields, roomInfo, graphPostResponse.id);
+    
+    return Promise.all([graphPostResponse, spPostResponse]);
 };
