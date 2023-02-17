@@ -351,7 +351,7 @@ const addGraphSPEvent = async (context: WebPartContext, roomsCalListName: string
     return Promise.all([graphPostResponse, spPostResponse]);
 };
 
-// Add Event (SP & Graph)
+// Update Event (SP & Graph)
 export const updateEvent = async (context: WebPartContext, roomsCalListName: string, itemDetails: any, eventDetails: any, eventDetailsRoom: any) => {
     if(eventDetails.addToCalField){
         return updateGraphSPEvent(context, roomsCalListName, itemDetails, eventDetails, eventDetailsRoom);
