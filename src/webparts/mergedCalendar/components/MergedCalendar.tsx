@@ -11,7 +11,7 @@ import {addToMyGraphCal, getMySchoolCalGUID, reRenderCalendars, getLegendChksSta
 import {getGraphCalsMultiBook, getAllPeriods, getSchoolCategory, getSchoolCycles, getBookedEvents, mergeBookings, addBooking} from '../Services/MultiBookOperations';
 import {formatEvDetails} from '../Services/EventFormat';
 import {setWpData} from '../Services/WpProperties';
-import {getRooms, getPeriods, getLocationGroup, getGuidelines, getRoomsCalendarName, addEvent, deleteItem, updateEvent, isEventCreator, getRoomInfo} from '../Services/RoomOperations';
+import {getRooms, getPeriods, getLocationGroup, getGuidelines, getRoomsCalendarName, addEvent, deleteItem, updateEvent, isEventCreator, getRoomInfo, getEventAttendees} from '../Services/RoomOperations';
 import {isUserManage} from '../Services/RoomOperations';
 
 import ICalendar from './ICalendar/ICalendar';
@@ -69,6 +69,7 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
   const [roomsCalendar, setRoomsCalendar] = React.useState('Events');
   const [calsVisibility, setCalsVisibility] = React.useState([]);
   const [calMsgErrs, setCalMsgErrs] = React.useState([]);  
+  const [invitedAttendees, setInvitedAttendees] = React.useState([]);
 
   // Multi-booking states
   const [isOpenMultiBook, { setTrue: openPanelMultiBook, setFalse: dismissPanelMultiBook }] = useBoolean(false);
@@ -220,7 +221,8 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
     descpField: "",
     periodField : {key: '', text:'', start:new Date(), end:new Date()},
     dateField : new Date(),
-    addToCalField: false
+    addToCalField: false,
+    attendees: []
   });
   //error handeling
   const [errorMsgField , setErrorMsgField] = React.useState({
@@ -233,7 +235,8 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
     descpField: "",
     periodField : {key: '', text:'', start:new Date(), end:new Date()},
     dateField : new Date(),    
-    addToCalField: false
+    addToCalField: false,
+    attendees: []
     });
     setErrorMsgField({
       titleField: "",
@@ -268,16 +271,27 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
           setPeriods(results);
         });
       }
+      //console.log("formFieldParam", formFieldParam);
+      //console.log("event", event);
     };
   };
 
   const handleDateClick = (arg:any) =>{    
     if(arg.event._def.extendedProps.roomId){
       const evDetails: any = formatEvDetails(arg);
+      // console.log("evDetails date_click", evDetails);
       setEventDetailsRoom(evDetails);
       setSelectedPeriod(evDetails.PeriodId);
       setBookFormMode('View');
       
+      setInvitedAttendees([]);
+      if(evDetails.GraphId){
+        getEventAttendees(props.context, evDetails.GraphId).then(graphEv => {
+          const attendees = graphEv.attendees;
+          setInvitedAttendees(attendees.map(attendee => attendee.emailAddress.address));
+        });
+      }
+
       isEventCreator(props.context, roomsCalendar, evDetails.EventId).then((v)=>{
         setIsCreator(v);
       });
@@ -505,7 +519,7 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
     setCurrentCalDate(currDate);
   };
 
-  /* Multiple Room Booking */
+  /* ----------- Multiple Room Booking ----------- */
   const multiBookPanelOpenHandler = () => {
     getAllPeriods(props.context, periodsList).then(results => {
       setAllPeriods(results);
@@ -926,6 +940,8 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
           roomInfo={roomInfo}
           isCreator = {isCreator}
           isPeriods = {true}
+          context = {props.context}
+          invitedAttendees = {invitedAttendees}
         >
           <MessageBar 
             className={roomStyles.guidelinesMsg}

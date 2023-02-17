@@ -9,6 +9,7 @@ import { useBoolean } from '@fluentui/react-hooks';
 import {isUserManage} from '../../Services/RoomOperations';
 import { IIconProps, initializeIcons, Icon } from '@fluentui/react';
 import { FontIcon } from '@fluentui/react/lib/Icon';
+import { PeoplePicker, PrincipalType } from "@pnp/spfx-controls-react/lib/PeoplePicker";
 
 export default function IRoomBook (props:IRoomBookProps) {
     
@@ -106,8 +107,10 @@ export default function IRoomBook (props:IRoomBookProps) {
     const [hideDialog, { toggle: toggleHideDialog }] = useBoolean(true);
     const panelHdrColor = props.bookFormMode === "New" ? props.roomInfo.Colour : props.eventDetailsRoom.RoomColor;
 
-    //console.log("props.formField", props.formField);
-
+    // console.log("props.formField", props.formField);
+    // console.log("props.roomInfo", props.roomInfo);
+    // console.log("props.eventDetailsRoom", props.eventDetailsRoom);
+    
     return(
         <React.Fragment>
         <div className={roomStyles.bookingForm}>
@@ -232,6 +235,29 @@ export default function IRoomBook (props:IRoomBookProps) {
                     onChange={props.onChangeFormField('addToCalField')}
                     disabled={disabledControl}
                 />
+                {props.formField.addToCalField &&
+                    <>
+                        <PeoplePicker
+                            context={props.context}
+                            titleText="Invite Attendees"
+                            groupName={''} // Leave this blank in case you want to filter from all users
+                            showtooltip={false}
+                            required={false}
+                            disabled={disabledControl}
+                            onChange={props.onChangeFormField('attendees')}
+                            showHiddenInUI={false}
+                            principalTypes={[PrincipalType.User, PrincipalType.SharePointGroup, PrincipalType.DistributionList, PrincipalType.SecurityGroup]}
+                            resolveDelay={1000} 
+                            personSelectionLimit={50}
+                            defaultSelectedUsers = {props.invitedAttendees}
+                        />
+                        <p className={roomStyles.eventWarning}>
+                            <Icon className={roomStyles.eventWarningIcon} iconName='Info'/> 
+                            <span>Only internal board users</span>
+                        </p>
+                    </>
+
+                }
                 {/* {props.bookFormMode === 'Edit' && props.formField.addToCalField &&
                     <p className={roomStyles.eventWarning}>
                         <Icon className={roomStyles.eventWarningIcon} iconName='Info'/> 

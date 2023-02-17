@@ -161,6 +161,13 @@ export const getChosenDate = (startPeriodField: any, endPeriodField: any, formFi
     return[chosenStartDate, chosenEndDate];
 };
 
+export const getEventAttendees = async (context: WebPartContext, eventId: string) => {
+    const grapClient = await context.msGraphClientFactory.getClient();
+    const graphGetResponse = await grapClient.api(`/me/events/${eventId}`).get();
+    //console.log("graphGetResponse", graphGetResponse);
+    return graphGetResponse;
+};
+
 export const addToMyGraphCal = async (context: WebPartContext, eventDetails: any, roomInfo: any) =>{
     const event = {
         "subject": eventDetails.titleField,
@@ -274,24 +281,25 @@ export const updateEventXX = async (context: WebPartContext, roomsCalListName: s
     }
 };
 
-export const addEvent = async (context: WebPartContext, roomsCalListName: string, eventDetails: any, roomInfo: any) => {
-    if(eventDetails.addToCalField){
-        return addGraphSPEvent(context, roomsCalListName, eventDetails, roomInfo);
+// Add Event (SP & Graph)
+export const addEvent = async (context: WebPartContext, roomsCalListName: string, formFields: any, roomInfo: any) => {
+    if(formFields.addToCalField){
+        return addGraphSPEvent(context, roomsCalListName, formFields, roomInfo);
     }else{
-        return addSPEvent(context, roomsCalListName, eventDetails, roomInfo);
+        return addSPEvent(context, roomsCalListName, formFields, roomInfo);
     }
 };
-const addSPEvent = async (context: WebPartContext, roomsCalListName: string, eventDetails: any, roomInfo: any, graphID?:string) => {
+const addSPEvent = async (context: WebPartContext, roomsCalListName: string, formFields: any, roomInfo: any, graphID?:string) => {
     const restUrl = context.pageContext.web.absoluteUrl + `/_api/web/lists/getByTitle('${roomsCalListName}')/items`;
     const body: string = JSON.stringify({
-        Title: eventDetails.titleField,
-        Description: eventDetails.descpField,
-        EventDate: getChosenDate(eventDetails.periodField.start, eventDetails.periodField.end, eventDetails.dateField)[0],
-        EndDate: getChosenDate(eventDetails.periodField.start, eventDetails.periodField.end, eventDetails.dateField)[1],
-        PeriodsId: eventDetails.periodField.key,
+        Title: formFields.titleField,
+        Description: formFields.descpField,
+        EventDate: getChosenDate(formFields.periodField.start, formFields.periodField.end, formFields.dateField)[0],
+        EndDate: getChosenDate(formFields.periodField.start, formFields.periodField.end, formFields.dateField)[1],
+        PeriodsId: formFields.periodField.key,
         RoomNameId: roomInfo.Id,
         Location: roomInfo.Title,
-        AddToMyCal: eventDetails.addToCalField,
+        AddToMyCal: formFields.addToCalField,
         GraphID: graphID
     });
     const spOptions: ISPHttpClientOptions = {
@@ -308,33 +316,42 @@ const addSPEvent = async (context: WebPartContext, roomsCalListName: string, eve
     }
     return _data;
 };
-const addGraphSPEvent = async (context: WebPartContext, roomsCalListName: string, eventDetails: any, roomInfo: any) => {
+const addGraphSPEvent = async (context: WebPartContext, roomsCalListName: string, formFields: any, roomInfo: any) => {
     const event = {
-        "subject": eventDetails.titleField,
+        "subject": formFields.titleField,
         "body": {
             "contentType": "HTML",
-            "content": eventDetails.descpField
+            "content": formFields.descpField
         },
         "start": {
-            "dateTime": getChosenDate(eventDetails.periodField.start, eventDetails.periodField.end, eventDetails.dateField)[0],
+            "dateTime": getChosenDate(formFields.periodField.start, formFields.periodField.end, formFields.dateField)[0],
             "timeZone": "Eastern Standard Time"
         },
         "end": {
-            "dateTime": getChosenDate(eventDetails.periodField.start, eventDetails.periodField.end, eventDetails.dateField)[1],
+            "dateTime": getChosenDate(formFields.periodField.start, formFields.periodField.end, formFields.dateField)[1],
             "timeZone": "Eastern Standard Time"
         },
         "location": {
-            "displayName": roomInfo.Title + ' - ' + eventDetails.periodField.text
-        }
+            "displayName": roomInfo.Title + ' - ' + formFields.periodField.text
+        },
+        "attendees" : formFields.attendees.map(attendee => {
+            return {
+                "emailAddress":{
+                    "name": attendee.text,
+                    "address": attendee.secondaryText
+                }
+            }
+        })
     };
 
     const grapClient = await context.msGraphClientFactory.getClient();
     const graphPostResponse = await grapClient.api("/me/events").post(event);
-    const spPostResponse = await addSPEvent(context, roomsCalListName, eventDetails, roomInfo, graphPostResponse.id);
+    const spPostResponse = await addSPEvent(context, roomsCalListName, formFields, roomInfo, graphPostResponse.id);
     
     return Promise.all([graphPostResponse, spPostResponse]);
 };
 
+// Add Event (SP & Graph)
 export const updateEvent = async (context: WebPartContext, roomsCalListName: string, itemDetails: any, eventDetails: any, eventDetailsRoom: any) => {
     if(eventDetails.addToCalField){
         return updateGraphSPEvent(context, roomsCalListName, itemDetails, eventDetails, eventDetailsRoom);
@@ -376,35 +393,44 @@ const updateSPEvent = async (context: WebPartContext, roomsCalListName: string, 
     
     return spResponse;
 };
-const updateGraphSPEvent = async (context: WebPartContext, roomsCalListName: string, itemDetails: any, eventDetails: any, eventDetailsRoom: any) => {
+const updateGraphSPEvent = async (context: WebPartContext, roomsCalListName: string, itemDetails: any, formFields: any, eventDetailsRoom: any) => {
     const event = {
-        "subject": eventDetails.titleField,
+        "subject": formFields.titleField,
         "body": {
             "contentType": "HTML",
-            "content": eventDetails.descpField
+            "content": formFields.descpField
         },
         "start": {
-            "dateTime": getChosenDate(eventDetails.periodField.start, eventDetails.periodField.end, eventDetails.dateField)[0],
+            "dateTime": getChosenDate(formFields.periodField.start, formFields.periodField.end, formFields.dateField)[0],
             "timeZone": "Eastern Standard Time"
         },
         "end": {
-            "dateTime": getChosenDate(eventDetails.periodField.start, eventDetails.periodField.end, eventDetails.dateField)[1],
+            "dateTime": getChosenDate(formFields.periodField.start, formFields.periodField.end, formFields.dateField)[1],
             "timeZone": "Eastern Standard Time"
         },
         "location": {
-            "displayName": eventDetailsRoom.Room + ' - ' + eventDetails.periodField.text
-        }
+            "displayName": eventDetailsRoom.Room + ' - ' + formFields.periodField.text
+        },
+        "attendees" : formFields.attendees.map(attendee => {
+            return {
+                "emailAddress":{
+                    "name": attendee.text,
+                    "address": attendee.secondaryText
+                }
+            }
+        })
     };
 
     const grapClient = await context.msGraphClientFactory.getClient();
     const graphPostResponse = itemDetails.GraphId 
         ? await grapClient.api(`/me/events/${itemDetails.GraphId}`).update(event)
         : await grapClient.api("/me/events").post(event);
-    const spPostResponse = await updateSPEvent(context, roomsCalListName, itemDetails, eventDetails, eventDetailsRoom, graphPostResponse.id);
+    const spPostResponse = await updateSPEvent(context, roomsCalListName, itemDetails, formFields, eventDetailsRoom, graphPostResponse.id);
 
     return Promise.all([graphPostResponse, spPostResponse]);
 };
 
+// Delete Event (SP & Graph)
 export const deleteItem = async (context: WebPartContext, listName: string, itemDetails: any) => {
     const spDeleteResp = await deleteSPItem(context, listName, itemDetails.EventId);
     const grphDeleteResp = itemDetails.GraphId ? await deleteGraphItem(context, itemDetails.GraphId) : null;
