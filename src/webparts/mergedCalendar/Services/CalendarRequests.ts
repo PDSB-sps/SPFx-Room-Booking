@@ -16,7 +16,7 @@ const resolveCalUrl = (context: WebPartContext, calType:string, calUrl:string, c
     const {dateRangeStart, dateRangeEnd} = getDatesWindow(currentDate);
 
     let restApiParamsWRange :string = `?$select=ID,Title,EventDate,EndDate,Location,Description,fAllDayEvent,fRecurrence,RecurrenceData,Category&$top=1000&$orderby=EndDate desc&$filter=fRecurrence eq 1 or EventDate ge '${dateRangeStart.toISOString()}' and EventDate le '${dateRangeEnd.toISOString()}'`;
-    let restApiParamsRoomWRange: string = `?$select=ID,Title,EventDate,EndDate,Location,Description,fAllDayEvent,fRecurrence,RecurrenceData,Status,AddToMyCal,RoomName/ColorCalculated,RoomName/ID,RoomName/Title,Periods/ID,Periods/EndTime,Periods/Title,Periods/StartTime&$expand=RoomName,Periods&$orderby=EventDate desc&$top=1000&$filter=fRecurrence eq 1 or EventDate ge '${dateRangeStart.toISOString()}' and EventDate le '${dateRangeEnd.toISOString()}'`;
+    let restApiParamsRoomWRange: string = `?$select=ID,Title,EventDate,EndDate,Location,Description,fAllDayEvent,fRecurrence,RecurrenceData,Status,AddToMyCal,GraphID,RoomName/ColorCalculated,RoomName/ID,RoomName/Title,Periods/ID,Periods/EndTime,Periods/Title,Periods/StartTime&$expand=RoomName,Periods&$orderby=EventDate desc&$top=1000&$filter=fRecurrence eq 1 or EventDate ge '${dateRangeStart.toISOString()}' and EventDate le '${dateRangeEnd.toISOString()}'`;
     
     restApiParams = restApiParamsWRange;
     restApiParamsRoom = restApiParamsRoomWRange;
@@ -153,7 +153,8 @@ export const getDefaultCals = async (context: WebPartContext, calSettings:{CalTy
                         rrule: result.fRecurrence ? parseRecurrentEvent(result.RecurrenceData, formatStartDate(result.EventDate), formatEndDate(result.EndDate)) : null,
                         className: "eventHidden",
                         calendar: calSettings.Title,
-                        calendarColor: calSettings.BgColorHex
+                        calendarColor: calSettings.BgColorHex,
+                        graphId: result.GraphID
                     });
                 });
             }
@@ -204,7 +205,8 @@ export const getRoomsCal = async (context: WebPartContext, calSettings:{CalType:
                         status: result.Status,
                         period: result.Periods.Title,
                         periodId: result.Periods.ID,
-                        addToCal: result.AddToMyCal
+                        addToCal: result.AddToMyCal,
+                        graphId: result.GraphID
                     });
                 });
             }

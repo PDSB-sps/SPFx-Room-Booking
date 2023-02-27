@@ -156,9 +156,16 @@ export const getChosenDate = (startPeriodField: any, endPeriodField: any, formFi
     chosenEndDate.setHours(endPeriodHr);
     chosenEndDate.setMinutes(endPeriodMin);
 
-    // console.log("[chosenStartDate, chosenEndDate]", [chosenStartDate, chosenEndDate]);
+    console.log("[chosenStartDate, chosenEndDate]", [chosenStartDate, chosenEndDate]);
 
     return[chosenStartDate, chosenEndDate];
+};
+
+export const getEventAttendees = async (context: WebPartContext, eventId: string) => {
+    const grapClient = await context.msGraphClientFactory.getClient();
+    const graphGetResponse = await grapClient.api(`/me/events/${eventId}`).get();
+    //console.log("graphGetResponse", graphGetResponse);
+    return graphGetResponse;
 };
 
 export const addToMyGraphCal = async (context: WebPartContext, eventDetails: any, roomInfo: any) =>{
@@ -181,18 +188,19 @@ export const addToMyGraphCal = async (context: WebPartContext, eventDetails: any
         }
     };
 
-    context.msGraphClientFactory
+    return context.msGraphClientFactory
         .getClient()
         .then((client :MSGraphClient)=>{
             client
                 .api("/me/events")
                 .post(event, (err, res) => {
-                    console.log(res);
+                    console.log("graph post response", res);
+                    return res;
                 });
         });
 };
 
-export const addEvent = async (context: WebPartContext, roomsCalListName: string, eventDetails: any, roomInfo: any) => {
+export const addEventXX = async (context: WebPartContext, roomsCalListName: string, eventDetails: any, roomInfo: any) => {
     // console.log("roomInfo", roomInfo);
     // console.log("eventDetails", eventDetails);
     const restUrl = context.pageContext.web.absoluteUrl + `/_api/web/lists/getByTitle('${roomsCalListName}')/items`;
@@ -217,16 +225,17 @@ export const addEvent = async (context: WebPartContext, roomsCalListName: string
     const _data = await context.spHttpClient.post(restUrl, SPHttpClient.configurations.v1, spOptions);
     if(_data.ok){
         console.log('New Event is added!');
+        console.log("New event info", _data); //promise
     }
 
     if(eventDetails.addToCalField){
-        addToMyGraphCal(context, eventDetails, roomInfo).then(()=>{
+        addToMyGraphCal(context, eventDetails, roomInfo).then((graphData)=>{
             console.log('Room added to My Calendar!');
+            console.log("Graph event data", graphData); //undefined
         });
     }
 };
-
-export const deleteItem = async (context: WebPartContext, listName: string, itemId: any) => {
+export const deleteItemXX = async (context: WebPartContext, listName: string, itemId: any) => {
     const restUrl = `${context.pageContext.web.absoluteUrl}/_api/web/lists/getByTitle('${listName}')/items(${itemId})/recycle`;
     let spOptions: ISPHttpClientOptions = {
         headers:{
@@ -243,8 +252,7 @@ export const deleteItem = async (context: WebPartContext, listName: string, item
         console.log('Item is deleted! Please check Recycle Bin to restore it.');
     }
 };
-
-export const updateEvent = async (context: WebPartContext, roomsCalListName: string, eventId: any, eventDetails: any, eventDetailsRoom: any) => {
+export const updateEventXX = async (context: WebPartContext, roomsCalListName: string, eventId: any, eventDetails: any, eventDetailsRoom: any) => {
     const restUrl = `${context.pageContext.web.absoluteUrl}/_api/web/lists/getByTitle('${roomsCalListName}')/items(${eventId})`,
     body: string = JSON.stringify({
         Title: eventDetails.titleField,
@@ -272,6 +280,239 @@ export const updateEvent = async (context: WebPartContext, roomsCalListName: str
         console.log('Event Booking is updated!');
     }
 };
+
+export const validateTimes = (startTime: string, endTime: string) => {
+    
+    const sameAMPM = (startTime.indexOf('AM') !== -1 && endTime.indexOf('AM') !== -1) || startTime.indexOf('PM') !== -1 && endTime.indexOf('PM') !== -1;
+    const isStartAM = startTime.indexOf('AM') !== -1 ? true : false;
+    const isEndAM = endTime.indexOf('AM') !== -1 ? true : false;
+    const startNum = Number(startTime.substring(0, startTime.indexOf(' ')).replace(':',''));
+    const endNum = Number(endTime.substring(0, endTime.indexOf(' ')).replace(':',''));
+
+    if (sameAMPM){ // if both AM or both PM
+        return startNum < endNum ;
+    }else{
+        if (!isStartAM && isEndAM) return false;
+        return true;
+    }
+};
+
+export const parseCustomTimes = (time: string) => {
+    const isPM = time.indexOf('PM') === -1 ? false : true;
+    const timeArr = time.substring(0,time.indexOf(' ')).split(':');
+    let formattedDate = new Date();
+    formattedDate.setHours(isPM ? Number(timeArr[0]) + 12 : Number(timeArr[0]));
+    formattedDate.setMinutes(Number(timeArr[1]));
+    formattedDate.setSeconds(0);
+    return formattedDate.toString();
+};
+
+// Add Event (SP & Graph)
+const addSPEvent = async (context: WebPartContext, roomsCalListName: string, formFields: any, roomInfo: any, graphID?:string) => {
+    console.log("addSPEvent Fnc - formFields", formFields);
+    
+    let startTime: string, endTime: string;
+    if (formFields.periodField.key == ''){
+        startTime = parseCustomTimes(formFields.startTimeField.key);
+        endTime = parseCustomTimes(formFields.endTimeField.key);
+    }else{
+        startTime = formFields.periodField.start;
+        endTime = formFields.periodField.end;
+    }
+    const chosenDate = getChosenDate(startTime, endTime, formFields.dateField);
+    
+    const restUrl = context.pageContext.web.absoluteUrl + `/_api/web/lists/getByTitle('${roomsCalListName}')/items`;
+    const body: string = JSON.stringify({
+        Title: formFields.titleField,
+        Description: formFields.descpField,
+        EventDate: chosenDate[0],
+        EndDate: chosenDate[1],
+        PeriodsId: formFields.periodField.key == '' ? null : formFields.periodField.key,
+        RoomNameId: roomInfo.Id,
+        Location: roomInfo.Title,
+        AddToMyCal: formFields.addToCalField,
+        GraphID: graphID
+    });
+    
+    const spOptions: ISPHttpClientOptions = {
+        headers:{
+            Accept: "application/json;odata=nometadata", 
+            "Content-Type": "application/json;odata=nometadata",
+            "odata-version": ""
+        },
+        body: body
+    };
+    const _data = await context.spHttpClient.post(restUrl, SPHttpClient.configurations.v1, spOptions);
+    if(_data.ok){
+        console.log('New SP Event is added!');
+    }
+    return _data;
+};
+const addGraphSPEvent = async (context: WebPartContext, roomsCalListName: string, formFields: any, roomInfo: any) => {
+    
+    let startTime: string, endTime: string;
+    if (formFields.periodField.key == ''){
+        startTime = parseCustomTimes(formFields.startTimeField.key);
+        endTime = parseCustomTimes(formFields.endTimeField.key);
+    }else{
+        startTime = formFields.periodField.start;
+        endTime = formFields.periodField.end;
+    }
+    const chosenDate = getChosenDate(startTime, endTime, formFields.dateField);
+
+    const event = {
+        "subject": formFields.titleField,
+        "body": {
+            "contentType": "HTML",
+            "content": formFields.descpField
+        },
+        "start": {
+            "dateTime": chosenDate[0],
+            "timeZone": "Eastern Standard Time"
+        },
+        "end": {
+            "dateTime": chosenDate[1],
+            "timeZone": "Eastern Standard Time"
+        },
+        "location": {
+            "displayName": roomInfo.Title + ' - ' + formFields.periodField.text
+        },
+        "attendees" : formFields.attendees.map(attendee => {
+            return {
+                "emailAddress":{
+                    "name": attendee.text,
+                    "address": attendee.secondaryText
+                }
+            };
+        })
+    };
+
+    const grapClient = await context.msGraphClientFactory.getClient();
+    const graphPostResponse = await grapClient.api("/me/events").post(event);
+    const spPostResponse = await addSPEvent(context, roomsCalListName, formFields, roomInfo, graphPostResponse.id);
+    
+    return Promise.all([graphPostResponse, spPostResponse]);
+};
+export const addEvent = async (context: WebPartContext, roomsCalListName: string, formFields: any, roomInfo: any) => {
+    if(formFields.addToCalField){
+        return addGraphSPEvent(context, roomsCalListName, formFields, roomInfo);
+    }else{
+        return addSPEvent(context, roomsCalListName, formFields, roomInfo);
+    }
+};
+
+// Delete Event (SP & Graph)
+const deleteSPItem = async (context: WebPartContext, listName: string, itemId: any) => {
+    const restUrl = `${context.pageContext.web.absoluteUrl}/_api/web/lists/getByTitle('${listName}')/items(${itemId})/recycle`;
+    let spOptions: ISPHttpClientOptions = {
+        headers:{
+            Accept: "application/json;odata=nometadata", 
+            "Content-Type": "application/json;odata=nometadata",
+            "odata-version": "",
+            "IF-MATCH": "*",
+            // "X-HTTP-Method": "DELETE"         
+        },
+    };
+
+    const _data = await context.spHttpClient.post(restUrl, SPHttpClient.configurations.v1, spOptions);
+    console.log("deleteSPItem data", _data);
+    if (_data.ok){
+        console.log('Item is deleted! Please check Recycle Bin to restore it.');
+    }
+    return _data;
+};
+const deleteGraphItem = async (context: WebPartContext, itemId: any) => {
+    const grapClient = await context.msGraphClientFactory.getClient();
+    const _data = await grapClient.api(`/me/events/${itemId}`).delete();
+    console.log('Graph Item is deleted from outlook calendar!', _data);
+    return _data;
+};
+export const deleteItem = async (context: WebPartContext, listName: string, itemDetails: any) => {
+    const spDeleteResp = await deleteSPItem(context, listName, itemDetails.EventId);
+    const grphDeleteResp = itemDetails.GraphId ? await deleteGraphItem(context, itemDetails.GraphId) : null;
+    return Promise.all([spDeleteResp, grphDeleteResp]);
+};
+
+// Update Event (SP & Graph)
+const updateSPEvent = async (context: WebPartContext, roomsCalListName: string, itemDetails: any, eventDetails: any, eventDetailsRoom: any, graphID?:any) => {
+    const restUrl = `${context.pageContext.web.absoluteUrl}/_api/web/lists/getByTitle('${roomsCalListName}')/items(${itemDetails.EventId})`,
+        body: string = JSON.stringify({
+            Title: eventDetails.titleField,
+            Description: eventDetails.descpField,
+            EventDate: getChosenDate(eventDetails.periodField.start, eventDetails.periodField.end, eventDetails.dateField)[0],
+            EndDate: getChosenDate(eventDetails.periodField.start, eventDetails.periodField.end, eventDetails.dateField)[1],
+            PeriodsId: eventDetails.periodField.key,
+            RoomNameId: eventDetailsRoom.RoomId,
+            Location: eventDetailsRoom.Room,
+            AddToMyCal: eventDetails.addToCalField,
+            GraphID: graphID
+        }),
+        spOptions: ISPHttpClientOptions = {
+            headers:{
+                Accept: "application/json;odata=nometadata", 
+                "Content-Type": "application/json;odata=nometadata",
+                "odata-version": "",
+                "IF-MATCH": "*",
+                "X-HTTP-Method": "MERGE",    
+            },
+            body: body
+        };
+    
+    const spResponse = await context.spHttpClient.post(restUrl, SPHttpClient.configurations.v1, spOptions);
+    if (spResponse.ok) console.log('Event Booking is updated!');
+    
+    return spResponse;
+};
+const updateGraphSPEvent = async (context: WebPartContext, roomsCalListName: string, itemDetails: any, formFields: any, eventDetailsRoom: any) => {
+    const event = {
+        "subject": formFields.titleField,
+        "body": {
+            "contentType": "HTML",
+            "content": formFields.descpField
+        },
+        "start": {
+            "dateTime": getChosenDate(formFields.periodField.start, formFields.periodField.end, formFields.dateField)[0],
+            "timeZone": "Eastern Standard Time"
+        },
+        "end": {
+            "dateTime": getChosenDate(formFields.periodField.start, formFields.periodField.end, formFields.dateField)[1],
+            "timeZone": "Eastern Standard Time"
+        },
+        "location": {
+            "displayName": eventDetailsRoom.Room + ' - ' + formFields.periodField.text
+        },
+        "attendees" : formFields.attendees.map(attendee => {
+            return {
+                "emailAddress":{
+                    "name": attendee.text,
+                    "address": attendee.secondaryText
+                }
+            };
+        })
+    };
+
+    const grapClient = await context.msGraphClientFactory.getClient();
+    const graphPostResponse = itemDetails.GraphId 
+        ? await grapClient.api(`/me/events/${itemDetails.GraphId}`).update(event)
+        : await grapClient.api("/me/events").post(event);
+    const spPostResponse = await updateSPEvent(context, roomsCalListName, itemDetails, formFields, eventDetailsRoom, graphPostResponse.id);
+
+    return Promise.all([graphPostResponse, spPostResponse]);
+};
+export const updateEvent = async (context: WebPartContext, roomsCalListName: string, itemDetails: any, eventDetails: any, eventDetailsRoom: any) => {
+    if(eventDetails.addToCalField){
+        return updateGraphSPEvent(context, roomsCalListName, itemDetails, eventDetails, eventDetailsRoom);
+    }else{
+        const spResponse = await updateSPEvent(context, roomsCalListName, itemDetails, eventDetails, eventDetailsRoom, null);
+        if (itemDetails.GraphId){
+            const graphResponse = await deleteGraphItem(context, itemDetails.GraphId);
+            return Promise.all([spResponse, graphResponse]);
+        }
+        return spResponse;
+    }
+};
+
+
 
 export const isEventCreator = async (context: WebPartContext, roomsCalListName: string, eventId: any) =>{
     const currUserId = context.pageContext.legacyPageContext["userId"];

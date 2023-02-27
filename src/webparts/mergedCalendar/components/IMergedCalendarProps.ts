@@ -10,4 +10,6 @@ export interface IMergedCalendarProps {
   roomsList: string;
   periodsList: string;
   guidelinesList: string;
+
+  isPeriods: boolean;
 }

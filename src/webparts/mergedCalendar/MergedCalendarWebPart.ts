@@ -6,7 +6,8 @@ import {
   PropertyPaneTextField,
   PropertyPaneCheckbox,
   PropertyPaneDropdown,
-  IPropertyPaneDropdownOption
+  IPropertyPaneDropdownOption,
+  PropertyPaneToggle
 } from '@microsoft/sp-property-pane';
 import { BaseClientSideWebPart } from '@microsoft/sp-webpart-base';
 
@@ -23,6 +24,7 @@ export interface IMergedCalendarWebPartProps {
   roomsList: string;
   periodsList: string;
   guidelinesList: string;
+  isPeriods: boolean;
 }
 
 export default class MergedCalendarWebPart extends BaseClientSideWebPart<IMergedCalendarWebPartProps> {
@@ -49,7 +51,8 @@ export default class MergedCalendarWebPart extends BaseClientSideWebPart<IMerged
           { key: 'E8Day', text: '8 Day Cycle' },
           { key: 'E9Day', text: '9 Day Cycle' },
           { key: 'E10Day', text: '10 Day Cycle' },
-        ]
+        ],
+        isPeriods: this.properties.isPeriods
       }
     );
 
@@ -159,6 +162,12 @@ export default class MergedCalendarWebPart extends BaseClientSideWebPart<IMerged
                   label : 'Rooms List',
                   options: this.lists,
                   selectedKey : 'Rooms'
+                }),
+                PropertyPaneToggle('isPeriods', {
+                  label: 'Use School Periods',
+                  checked: this.properties.isPeriods,
+                  onText: 'Yes',
+                  offText: 'No'
                 }),
                 PropertyPaneDropdown('periodsList', {
                   label : 'Periods List',

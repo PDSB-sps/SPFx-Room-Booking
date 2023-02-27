@@ -12,7 +12,7 @@ export default function IMultiBookList(props: IMultiBookListProps){
     const onToggleHandler = (itemIndex) => {
         return (ev: React.MouseEvent<HTMLElement>, checked?: boolean) => {
             props.updateBookings(itemIndex, checked);
-        }
+        };
     };
 
     const columns = [

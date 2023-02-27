@@ -1,3 +1,4 @@
+import { WebPartContext } from "@microsoft/sp-webpart-base";
 export interface IRoomBookProps{
     formField: any;
     errorMsgField: any;
@@ -16,4 +17,7 @@ export interface IRoomBookProps{
     isCreator: boolean;
 
     isPeriods: boolean;
+
+    context: WebPartContext;
+    invitedAttendees: string[];
 }
