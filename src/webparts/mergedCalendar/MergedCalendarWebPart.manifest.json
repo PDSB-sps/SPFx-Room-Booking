@@ -26,7 +26,8 @@
       "calSettingsList" : "CalendarSettings",
       "roomsList" : "Rooms",
       "periodsList" : "Periods",
-      "guidelinesList" : "Guidelines"
+      "guidelinesList" : "Guidelines",
+      "isPeriods": true
     }
   }]
 }

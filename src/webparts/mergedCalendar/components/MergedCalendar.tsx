@@ -11,7 +11,7 @@ import {addToMyGraphCal, getMySchoolCalGUID, reRenderCalendars, getLegendChksSta
 import {getGraphCalsMultiBook, getAllPeriods, getSchoolCategory, getSchoolCycles, getBookedEvents, mergeBookings, addBooking} from '../Services/MultiBookOperations';
 import {formatEvDetails} from '../Services/EventFormat';
 import {setWpData} from '../Services/WpProperties';
-import {getRooms, getPeriods, getLocationGroup, getGuidelines, getRoomsCalendarName, addEvent, deleteItem, updateEvent, isEventCreator, getRoomInfo, getEventAttendees} from '../Services/RoomOperations';
+import {getRooms, getPeriods, getLocationGroup, getGuidelines, getRoomsCalendarName, addEvent, deleteItem, updateEvent, isEventCreator, getRoomInfo, getEventAttendees, validateTimes} from '../Services/RoomOperations';
 import {isUserManage} from '../Services/RoomOperations';
 
 import ICalendar from './ICalendar/ICalendar';
@@ -222,27 +222,35 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
     periodField : {key: '', text:'', start:new Date(), end:new Date()},
     dateField : new Date(),
     addToCalField: false,
-    attendees: []
+    attendees: [],
+    startTimeField: {key: '8:00 AM', text:'8:00 AM'},
+    endTimeField:{key: '9:00 AM', text:'9:00 AM'}
   });
   //error handeling
   const [errorMsgField , setErrorMsgField] = React.useState({
     titleField: "",
     periodField : "",
+    startEndTimeFields: '',
   });
   const resetFields = () =>{
     setFormField({
-    titleField: "",
-    descpField: "",
-    periodField : {key: '', text:'', start:new Date(), end:new Date()},
-    dateField : new Date(),    
-    addToCalField: false,
-    attendees: []
+      titleField: "",
+      descpField: "",
+      periodField : {key: '', text:'', start:new Date(), end:new Date()},
+      dateField : new Date(),    
+      addToCalField: false,
+      attendees: [],
+      startTimeField: {key: '8:00 AM', text:'8:00 AM'},
+      endTimeField:{key: '9:00 AM', text:'9:00 AM'}
     });
     setErrorMsgField({
       titleField: "",
       periodField : "",
+      startEndTimeFields: '',
     });
   };
+
+  
   const onChangeFormField = (formFieldParam: string) =>{
     return (event: any, newValue?: any)=>{
       //Note to self
@@ -254,13 +262,14 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
         [formFieldParam]: (newValue === undefined && typeof event === "object") ? event : (typeof newValue === "boolean" ? !!newValue : newValue || ''),
       });
 
-      setErrorMsgField({titleField: "", periodField: ""});
+      setErrorMsgField({titleField: "", periodField: "", startEndTimeFields: ""});
       // const calculatedRoomId = roomInfo ? roomInfo.Id : eventDetailsRoom.RoomId;
       // console.log("bookFormMode", bookFormMode);
       const calculatedRoomId = bookFormMode === "New" ? roomInfo.Id : eventDetailsRoom.RoomId;
 
-      // console.log("formField.dateField", formField.dateField);
-      // console.log("event", event);
+      console.log("formField", formFieldParam);
+      console.log("event", event);
+      console.log("newValue", newValue);
       // console.log("formField.dateField !== event", moment(formField.dateField).format('MM-DD-YYYY') !== moment(event).format('MM-DD-YYYY'));
 
       if(formFieldParam === 'dateField' && moment(formField.dateField).format('MM-DD-YYYY') !== moment(event).format('MM-DD-YYYY')){
@@ -271,6 +280,8 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
           setPeriods(results);
         });
       }
+
+      
       //console.log("formFieldParam", formFieldParam);
       //console.log("event", event);
     };
@@ -279,7 +290,7 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
   const handleDateClick = (arg:any) =>{    
     if(arg.event._def.extendedProps.roomId){
       const evDetails: any = formatEvDetails(arg);
-      // console.log("evDetails date_click", evDetails);
+      console.log("evDetails date_click", evDetails);
       setEventDetailsRoom(evDetails);
       setSelectedPeriod(evDetails.PeriodId);
       setBookFormMode('View');
@@ -309,7 +320,9 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
         descpField: evDetails.Body,
         periodField : {key: evDetails.PeriodId, text:evDetails.Period, start:new Date(evDetails.Start), end:new Date(evDetails.End)},
         dateField : new Date(evDetails.Start),    
-        addToCalField: evDetails.AddToMyCal
+        addToCalField: evDetails.AddToMyCal,
+        startTimeField: {key: evDetails.Start.substring(evDetails.Start.indexOf(' ')+1), text: evDetails.Start.substring(evDetails.Start.indexOf(' ')+1)},
+        endTimeField: {key: evDetails.End.substring(evDetails.End.indexOf(' ')+1), text: evDetails.End.substring(evDetails.End.indexOf(' ')+1)}
       });    
 
       dismissPanelDetails();
@@ -322,19 +335,45 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
   };
   
   const handleError = (callback:any) =>{
-    if (formField.titleField == "" && formField.periodField.key == ""){
-      setErrorMsgField({titleField: "Title Field Required", periodField: "Period Field Required"});
+    
+    let allFieldsValid = true;
+    
+    if (formField.titleField == ""){
+      setErrorMsgField(prevState => {
+        return {
+          ...prevState,
+          ['titleField'] : "Title Field Required."
+        }
+      });
+      allFieldsValid = false;
     }
-    else if (formField.titleField == ""){
-      setErrorMsgField({titleField: "Title Field Required", periodField: ""});
+    if (props.isPeriods && formField.periodField.key == ""){
+      setErrorMsgField(prevState => {
+        return {
+          ...prevState,
+          ['periodField'] : "Period Field Required."
+        }
+      });
+      allFieldsValid = false;
     }
-    else if (formField.periodField.key == ""){
-      setErrorMsgField({titleField: "", periodField: "Period Field Required"});
+    if (!validateTimes(formField.startTimeField.key, formField.endTimeField.key)){
+      setErrorMsgField(prevState => {
+        return {
+          ...prevState,
+          ['startEndTimeFields'] : "End time cannot be less than or equal start time."
+        }
+      });
+      allFieldsValid = false;
     }
-    else{
-      setErrorMsgField({titleField: "", periodField: ""});
+    if (allFieldsValid){
+      setErrorMsgField({
+        titleField: "", 
+        periodField: "",
+        startEndTimeFields: ""
+      });
       callback();
     }
+
   };
 
   //Filter Rooms
@@ -379,26 +418,40 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
   const onNewBookingClickHandler = ()=>{
     handleError(()=>{
       
-      getPeriods(props.context, periodsList, roomInfo.Id, formField.dateField).then((results: any)=>{
-        setPeriods(results);
-        
-        let seletedPeriod = results.filter(item => item.key === formField.periodField.key);
-        if (!seletedPeriod[0].disabled){          
-          addEvent(props.context, roomsCalendar, formField, roomInfo).then(()=>{
-            const callback = () =>{
-              dismissPanelBook();
-              popToast('A New Event Booking is successfully added!');                              
-            };
-            loadLatestCalendars(callback);
-          });
-        }else{ //Period already booked
-          setErrorMsgField({titleField: "", periodField: "Looks like the period is already booked! Please choose another one."});
-          setFormField({
-            ...formField,
-            periodField : {key: '', text:'', start:new Date(), end:new Date()}
-          });
-        }
-      });
+      if (props.isPeriods){
+        getPeriods(props.context, periodsList, roomInfo.Id, formField.dateField).then((results: any)=>{
+          setPeriods(results);
+          
+          let seletedPeriod = results.filter(item => item.key === formField.periodField.key);
+          if (!seletedPeriod[0].disabled){          
+            addEvent(props.context, roomsCalendar, formField, roomInfo).then(()=>{
+              const callback = () =>{
+                dismissPanelBook();
+                popToast('A New Event Booking is successfully added!');                              
+              };
+              loadLatestCalendars(callback);
+            });
+          }else{ //Period already booked
+            setErrorMsgField({
+              titleField: "", 
+              periodField: "Looks like the period is already booked! Please choose another one.",
+              startEndTimeFields: ""
+            });
+            setFormField({
+              ...formField,
+              periodField : {key: '', text:'', start:new Date(), end:new Date()}
+            });
+          }
+        });
+      }else{
+        addEvent(props.context, roomsCalendar, formField, roomInfo).then(()=>{
+          const callback = () =>{
+            dismissPanelBook();
+            popToast('A New Event Booking is successfully added!');                              
+          };
+          loadLatestCalendars(callback);
+        });
+      }
       
     });
   };
@@ -429,7 +482,11 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
           loadLatestCalendars(callback);
         });
       }else{ //Period already booked
-        setErrorMsgField({titleField: "", periodField: "Looks like the period is already booked! Please choose another one."});
+        setErrorMsgField({
+          titleField: "", 
+          periodField: "Looks like the period is already booked! Please choose another one.",
+          startEndTimeFields: ""
+        });
         setFormField({
           ...formField,
           periodField : {key: '', text:'', start:new Date(), end:new Date()}
@@ -940,7 +997,7 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
           onUpdateBookingClick={onUpdateBookingClickHandler}
           roomInfo={roomInfo}
           isCreator = {isCreator}
-          isPeriods = {true}
+          isPeriods = {props.isPeriods}
           context = {props.context}
           invitedAttendees = {invitedAttendees}
         >

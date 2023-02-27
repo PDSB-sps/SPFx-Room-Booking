@@ -156,7 +156,7 @@ export const getChosenDate = (startPeriodField: any, endPeriodField: any, formFi
     chosenEndDate.setHours(endPeriodHr);
     chosenEndDate.setMinutes(endPeriodMin);
 
-    // console.log("[chosenStartDate, chosenEndDate]", [chosenStartDate, chosenEndDate]);
+    console.log("[chosenStartDate, chosenEndDate]", [chosenStartDate, chosenEndDate]);
 
     return[chosenStartDate, chosenEndDate];
 };
@@ -281,20 +281,59 @@ export const updateEventXX = async (context: WebPartContext, roomsCalListName: s
     }
 };
 
+export const validateTimes = (startTime: string, endTime: string) => {
+    
+    const sameAMPM = (startTime.indexOf('AM') !== -1 && endTime.indexOf('AM') !== -1) || startTime.indexOf('PM') !== -1 && endTime.indexOf('PM') !== -1;
+    const isStartAM = startTime.indexOf('AM') !== -1 ? true : false;
+    const isEndAM = endTime.indexOf('AM') !== -1 ? true : false;
+    const startNum = Number(startTime.substring(0, startTime.indexOf(' ')).replace(':',''));
+    const endNum = Number(endTime.substring(0, endTime.indexOf(' ')).replace(':',''));
+
+    if (sameAMPM){ // if both AM or both PM
+        return startNum < endNum ;
+    }else{
+        if (!isStartAM && isEndAM) return false;
+        return true;
+    }
+};
+
+export const parseCustomTimes = (time: string) => {
+    const isPM = time.indexOf('PM') === -1 ? false : true;
+    const timeArr = time.substring(0,time.indexOf(' ')).split(':');
+    let formattedDate = new Date();
+    formattedDate.setHours(isPM ? Number(timeArr[0]) + 12 : Number(timeArr[0]));
+    formattedDate.setMinutes(Number(timeArr[1]));
+    formattedDate.setSeconds(0);
+    return formattedDate.toString();
+};
+
 // Add Event (SP & Graph)
 const addSPEvent = async (context: WebPartContext, roomsCalListName: string, formFields: any, roomInfo: any, graphID?:string) => {
+    console.log("addSPEvent Fnc - formFields", formFields);
+    
+    let startTime: string, endTime: string;
+    if (formFields.periodField.key == ''){
+        startTime = parseCustomTimes(formFields.startTimeField.key);
+        endTime = parseCustomTimes(formFields.endTimeField.key);
+    }else{
+        startTime = formFields.periodField.start;
+        endTime = formFields.periodField.end;
+    }
+    const chosenDate = getChosenDate(startTime, endTime, formFields.dateField);
+    
     const restUrl = context.pageContext.web.absoluteUrl + `/_api/web/lists/getByTitle('${roomsCalListName}')/items`;
     const body: string = JSON.stringify({
         Title: formFields.titleField,
         Description: formFields.descpField,
-        EventDate: getChosenDate(formFields.periodField.start, formFields.periodField.end, formFields.dateField)[0],
-        EndDate: getChosenDate(formFields.periodField.start, formFields.periodField.end, formFields.dateField)[1],
-        PeriodsId: formFields.periodField.key,
+        EventDate: chosenDate[0],
+        EndDate: chosenDate[1],
+        PeriodsId: formFields.periodField.key == '' ? null : formFields.periodField.key,
         RoomNameId: roomInfo.Id,
         Location: roomInfo.Title,
         AddToMyCal: formFields.addToCalField,
         GraphID: graphID
     });
+    
     const spOptions: ISPHttpClientOptions = {
         headers:{
             Accept: "application/json;odata=nometadata", 
@@ -310,6 +349,17 @@ const addSPEvent = async (context: WebPartContext, roomsCalListName: string, for
     return _data;
 };
 const addGraphSPEvent = async (context: WebPartContext, roomsCalListName: string, formFields: any, roomInfo: any) => {
+    
+    let startTime: string, endTime: string;
+    if (formFields.periodField.key == ''){
+        startTime = parseCustomTimes(formFields.startTimeField.key);
+        endTime = parseCustomTimes(formFields.endTimeField.key);
+    }else{
+        startTime = formFields.periodField.start;
+        endTime = formFields.periodField.end;
+    }
+    const chosenDate = getChosenDate(startTime, endTime, formFields.dateField);
+
     const event = {
         "subject": formFields.titleField,
         "body": {
@@ -317,11 +367,11 @@ const addGraphSPEvent = async (context: WebPartContext, roomsCalListName: string
             "content": formFields.descpField
         },
         "start": {
-            "dateTime": getChosenDate(formFields.periodField.start, formFields.periodField.end, formFields.dateField)[0],
+            "dateTime": chosenDate[0],
             "timeZone": "Eastern Standard Time"
         },
         "end": {
-            "dateTime": getChosenDate(formFields.periodField.start, formFields.periodField.end, formFields.dateField)[1],
+            "dateTime": chosenDate[1],
             "timeZone": "Eastern Standard Time"
         },
         "location": {
