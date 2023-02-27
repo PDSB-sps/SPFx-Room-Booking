@@ -93,7 +93,8 @@ export default function IRoomBook (props:IRoomBookProps) {
         { key: '55', text: '55' },
     ];
 
-    let newKey = 1;
+
+    let newStartKey = 1, newEndKey = 1;
     let initialTimeOptions: IComboBoxOption[] = [
         {key: '6:00 AM', text: '6:00 AM'},
         {key: '6:30 AM', text: '6:30 AM'},
@@ -127,20 +128,37 @@ export default function IRoomBook (props:IRoomBookProps) {
         {key: '8:30 PM', text: '8:30 PM'},
         {key: '9:00 PM', text: '9:00 PM'},
     ];
-    const [selectedKey, setSelectedKey] = React.useState<string | number | undefined>('C');
-    const [timeOptions, setTimeOptions] = React.useState(initialTimeOptions);
-    const onTimeChange = React.useCallback(
+    const [startSelectedKey, setStartSelectedKey] = React.useState<string | number | undefined>('C');
+    const [endSelectedKey, setEndSelectedKey] = React.useState<string | number | undefined>('C');
+    const [startTimeOptions, setStartTimeOptions] = React.useState(initialTimeOptions);
+    const [endTimeOptions, setEndTimeOptions] = React.useState(initialTimeOptions);
+    const onStartTimeChange = React.useCallback(
         (event: React.FormEvent<IComboBox>, option?: IComboBoxOption, index?: number, value?: string): void => {
           let key = option?.key;
           if (!option && value) {
             // If allowFreeform is true, the newly selected option might be something the user typed that
             // doesn't exist in the options list yet. So there's extra work to manually add it.
-            key = `${newKey++}`;
-            setTimeOptions(prevOptions => [...prevOptions, { key: key!, text: value }]);
+            key = `${newStartKey++}`;
+            setStartTimeOptions(prevOptions => [...prevOptions, { key: key!, text: value }]);
           }
-          setSelectedKey(key);
+          setStartSelectedKey(key);
+          props.onChangeFormField('startTimeField');
         }
     ,[]);
+    const onEndTimeChange = React.useCallback(
+        (event: React.FormEvent<IComboBox>, option?: IComboBoxOption, index?: number, value?: string): void => {
+          let key = option?.key;
+          if (!option && value) {
+            // If allowFreeform is true, the newly selected option might be something the user typed that
+            // doesn't exist in the options list yet. So there's extra work to manually add it.
+            key = `${newEndKey++}`;
+            setEndTimeOptions(prevOptions => [...prevOptions, { key: key!, text: value }]);
+          }
+          setEndSelectedKey(key);
+          props.onChangeFormField('endTimeField');
+        }
+    ,[]);
+
 
     const disabledControl = props.bookFormMode === 'View' ? true: false;
     
@@ -241,41 +259,16 @@ export default function IRoomBook (props:IRoomBookProps) {
                 />     
                 :
                 <>
-                    {/* <Stack horizontal tokens={stackTokens} styles={stackStyles}>
-                        <TimePicker
-                            useHour12
-                            allowFreeform
-                            autoComplete="on"
-                            required
-                            label={'Start Time'}
-                            onChange={props.onChangeFormField('startTimeField')}
-                            defaultValue={parseCustomTimes(props.formField.startTimeField.key)}
-                            useComboBoxAsMenuWidth
-                        />
-                        <TimePicker
-                            useHour12
-                            allowFreeform
-                            autoComplete="on"
-                            required
-                            label={'End Time'}
-                            onChange={props.onChangeFormField('endTimeField')}
-                            defaultValue={parseCustomTimes(props.formField.endTimeField.key)}
-                            useComboBoxAsMenuWidth
-                            
-                        />
-                    </Stack> */}
-                    
-
                     <Stack horizontal tokens={stackTokens} styles={stackStyles}>
                         <ComboBox
                             label="Start Time"
                             allowFreeform
                             autoComplete={'on'}
-                            options={timeOptions}
+                            options={startTimeOptions}
                             // onChange={props.onChangeFormField('startTimeField')}
                             // selectedKey={props.formField.startTimeField.key}
-                            onChange={onTimeChange}
-                            selectedKey={selectedKey}
+                            onChange={onStartTimeChange}
+                            selectedKey={startSelectedKey}
                             useComboBoxAsMenuWidth
                             required
                         />
@@ -283,22 +276,16 @@ export default function IRoomBook (props:IRoomBookProps) {
                             label="End Time"
                             allowFreeform
                             autoComplete={'on'}
-                            options={timeOptions}
+                            options={endTimeOptions}
                             // onChange={props.onChangeFormField('endTimeField')}
                             // selectedKey={props.formField.endTimeField.key}
-                            onChange={onTimeChange}
-                            selectedKey={selectedKey}
+                            onChange={onEndTimeChange}
+                            selectedKey={endSelectedKey}
                             useComboBoxAsMenuWidth
                             required
                         />
                     </Stack>
                     <p className={roomStyles.formAstrisk}>{props.errorMsgField.startEndTimeFields}</p>
-
-                    {/* <Stack horizontal tokens={stackTokens} styles={stackStyles}>
-                        <TextField onChange={props.onChangeFormField('startTimeField')} value={props.formField.startTimeField.key} />
-                        <TextField onChange={props.onChangeFormField('endTimeField')} value={props.formField.endTimeField.key} />
-                    </Stack> */}
-                   
                 </>
                 }              
                 <Toggle 
@@ -332,12 +319,14 @@ export default function IRoomBook (props:IRoomBookProps) {
                     </>
 
                 }
-                {/* {props.bookFormMode === 'Edit' && props.formField.addToCalField &&
+                {/* 
+                {props.bookFormMode === 'Edit' && props.formField.addToCalField &&
                     <p className={roomStyles.eventWarning}>
                         <Icon className={roomStyles.eventWarningIcon} iconName='Info'/> 
                         <span>Please note that by updating this event, this will a add new event to your <i>personal calendar</i>. You will have to manually delete the old one.</span>
                     </p>
-                }                      */}
+                }                      
+                */}
             </Stack>
         </div>
         <div>
