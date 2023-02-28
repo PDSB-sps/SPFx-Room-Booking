@@ -282,7 +282,6 @@ export const updateEventXX = async (context: WebPartContext, roomsCalListName: s
 };
 
 export const validateTimes = (startTime: string, endTime: string) => {
-    
     const sameAMPM = (startTime.indexOf('AM') !== -1 && endTime.indexOf('AM') !== -1) || startTime.indexOf('PM') !== -1 && endTime.indexOf('PM') !== -1;
     const isStartAM = startTime.indexOf('AM') !== -1 ? true : false;
     const isEndAM = endTime.indexOf('AM') !== -1 ? true : false;
@@ -296,7 +295,6 @@ export const validateTimes = (startTime: string, endTime: string) => {
         return true;
     }
 };
-
 export const parseCustomTimes = (time: string) => {
     const isPM = time.indexOf('PM') === -1 ? false : true;
     const timeArr = time.substring(0,time.indexOf(' ')).split(':');
@@ -434,17 +432,28 @@ export const deleteItem = async (context: WebPartContext, listName: string, item
 };
 
 // Update Event (SP & Graph)
-const updateSPEvent = async (context: WebPartContext, roomsCalListName: string, itemDetails: any, eventDetails: any, eventDetailsRoom: any, graphID?:any) => {
+const updateSPEvent = async (context: WebPartContext, roomsCalListName: string, itemDetails: any, formFields: any, eventDetailsRoom: any, graphID?:any) => {
+    
+    let startTime: string, endTime: string;
+    if (formFields.periodField.key == ''){
+        startTime = parseCustomTimes(formFields.startTimeField.key);
+        endTime = parseCustomTimes(formFields.endTimeField.key);
+    }else{
+        startTime = formFields.periodField.start;
+        endTime = formFields.periodField.end;
+    }
+    const chosenDate = getChosenDate(startTime, endTime, formFields.dateField);
+
     const restUrl = `${context.pageContext.web.absoluteUrl}/_api/web/lists/getByTitle('${roomsCalListName}')/items(${itemDetails.EventId})`,
         body: string = JSON.stringify({
-            Title: eventDetails.titleField,
-            Description: eventDetails.descpField,
-            EventDate: getChosenDate(eventDetails.periodField.start, eventDetails.periodField.end, eventDetails.dateField)[0],
-            EndDate: getChosenDate(eventDetails.periodField.start, eventDetails.periodField.end, eventDetails.dateField)[1],
-            PeriodsId: eventDetails.periodField.key,
+            Title: formFields.titleField,
+            Description: formFields.descpField,
+            EventDate: chosenDate[0],
+            EndDate: chosenDate[1],
+            PeriodsId: formFields.periodField.key == '' ? null : formFields.periodField.key,
             RoomNameId: eventDetailsRoom.RoomId,
             Location: eventDetailsRoom.Room,
-            AddToMyCal: eventDetails.addToCalField,
+            AddToMyCal: formFields.addToCalField,
             GraphID: graphID
         }),
         spOptions: ISPHttpClientOptions = {
@@ -464,6 +473,17 @@ const updateSPEvent = async (context: WebPartContext, roomsCalListName: string, 
     return spResponse;
 };
 const updateGraphSPEvent = async (context: WebPartContext, roomsCalListName: string, itemDetails: any, formFields: any, eventDetailsRoom: any) => {
+    
+    let startTime: string, endTime: string;
+    if (formFields.periodField.key == ''){
+        startTime = parseCustomTimes(formFields.startTimeField.key);
+        endTime = parseCustomTimes(formFields.endTimeField.key);
+    }else{
+        startTime = formFields.periodField.start;
+        endTime = formFields.periodField.end;
+    }
+    const chosenDate = getChosenDate(startTime, endTime, formFields.dateField);
+
     const event = {
         "subject": formFields.titleField,
         "body": {
@@ -471,11 +491,11 @@ const updateGraphSPEvent = async (context: WebPartContext, roomsCalListName: str
             "content": formFields.descpField
         },
         "start": {
-            "dateTime": getChosenDate(formFields.periodField.start, formFields.periodField.end, formFields.dateField)[0],
+            "dateTime": chosenDate[0],
             "timeZone": "Eastern Standard Time"
         },
         "end": {
-            "dateTime": getChosenDate(formFields.periodField.start, formFields.periodField.end, formFields.dateField)[1],
+            "dateTime": chosenDate[1],
             "timeZone": "Eastern Standard Time"
         },
         "location": {

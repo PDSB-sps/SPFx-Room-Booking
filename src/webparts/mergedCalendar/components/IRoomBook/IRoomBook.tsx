@@ -1,14 +1,11 @@
 import * as React from 'react';
-import {IconButton, Label, Stack, IStackStyles, TextField, Dropdown, DatePicker, IDatePickerStrings, DayOfWeek, ComboBox, IComboBox, IComboBoxOption, Toggle, PrimaryButton, DefaultButton, Dialog, DialogType, DialogFooter, on} from '@fluentui/react';
+import {Stack, IStackStyles, TextField, Dropdown, DatePicker, IDatePickerStrings, DayOfWeek, ComboBox, IComboBox, IComboBoxOption, Toggle, PrimaryButton, DefaultButton, Dialog, DialogType, DialogFooter} from '@fluentui/react';
 import styles from '../MergedCalendar.module.scss';
 import roomStyles from '../Room.module.scss';
 import { IRoomBookProps } from './IRoomBookProps';
-import {getChosenDate, parseCustomTimes} from '../../Services/RoomOperations';
-import * as moment from 'moment';
 import { useBoolean } from '@fluentui/react-hooks';
 import {isUserManage} from '../../Services/RoomOperations';
 import { IIconProps, initializeIcons, Icon } from '@fluentui/react';
-import { FontIcon } from '@fluentui/react/lib/Icon';
 import { PeoplePicker, PrincipalType } from "@pnp/spfx-controls-react/lib/PeoplePicker";
 
 export default function IRoomBook (props:IRoomBookProps) {
@@ -139,10 +136,10 @@ export default function IRoomBook (props:IRoomBookProps) {
             // If allowFreeform is true, the newly selected option might be something the user typed that
             // doesn't exist in the options list yet. So there's extra work to manually add it.
             key = `${newStartKey++}`;
-            setStartTimeOptions(prevOptions => [...prevOptions, { key: key!, text: value }]);
+            setStartTimeOptions(prevOptions => [...prevOptions, { key: value, text: value }]);
           }
           setStartSelectedKey(key);
-          props.onChangeFormField('startTimeField');
+          props.onChangeFormTimesField('startTimeField', value, value);
         }
     ,[]);
     const onEndTimeChange = React.useCallback(
@@ -152,13 +149,12 @@ export default function IRoomBook (props:IRoomBookProps) {
             // If allowFreeform is true, the newly selected option might be something the user typed that
             // doesn't exist in the options list yet. So there's extra work to manually add it.
             key = `${newEndKey++}`;
-            setEndTimeOptions(prevOptions => [...prevOptions, { key: key!, text: value }]);
+            setEndTimeOptions(prevOptions => [...prevOptions, { key: value, text: value }]);
           }
           setEndSelectedKey(key);
-          props.onChangeFormField('endTimeField');
+          props.onChangeFormTimesField('endTimeField', value, value);
         }
     ,[]);
-
 
     const disabledControl = props.bookFormMode === 'View' ? true: false;
     
@@ -175,6 +171,8 @@ export default function IRoomBook (props:IRoomBookProps) {
     const panelHdrColor = props.bookFormMode === "New" ? props.roomInfo.Colour : props.eventDetailsRoom.RoomColor;
 
     console.log("props.formField", props.formField);
+    // console.log("props.formField.startTimeField.key", props.formField.startTimeField.key);
+    // console.log("props.formField.endTimeField.key", props.formField.endTimeField.key);
     // console.log("props.roomInfo", props.roomInfo);
     // console.log("props.eventDetailsRoom", props.eventDetailsRoom);
 
@@ -265,24 +263,24 @@ export default function IRoomBook (props:IRoomBookProps) {
                             allowFreeform
                             autoComplete={'on'}
                             options={startTimeOptions}
-                            // onChange={props.onChangeFormField('startTimeField')}
-                            // selectedKey={props.formField.startTimeField.key}
                             onChange={onStartTimeChange}
-                            selectedKey={startSelectedKey}
+                            defaultSelectedKey={props.formField.startTimeField ? props.formField.startTimeField.key : startSelectedKey}
+                            text={props.formField.startTimeField ? props.formField.startTimeField.text : startSelectedKey}
                             useComboBoxAsMenuWidth
                             required
+                            disabled={disabledControl}
                         />
                         <ComboBox
                             label="End Time"
                             allowFreeform
                             autoComplete={'on'}
                             options={endTimeOptions}
-                            // onChange={props.onChangeFormField('endTimeField')}
-                            // selectedKey={props.formField.endTimeField.key}
                             onChange={onEndTimeChange}
-                            selectedKey={endSelectedKey}
+                            defaultSelectedKey={props.formField.endTimeField ? props.formField.endTimeField.key : endSelectedKey}
+                            text={props.formField.endTimeField ? props.formField.endTimeField.text : endSelectedKey}
                             useComboBoxAsMenuWidth
                             required
+                            disabled={disabledControl}
                         />
                     </Stack>
                     <p className={roomStyles.formAstrisk}>{props.errorMsgField.startEndTimeFields}</p>

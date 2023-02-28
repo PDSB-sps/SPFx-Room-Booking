@@ -17,6 +17,7 @@ export interface IRoomBookProps{
     isCreator: boolean;
 
     isPeriods: boolean;
+    onChangeFormTimesField: any;
 
     context: WebPartContext;
     invitedAttendees: string[];
