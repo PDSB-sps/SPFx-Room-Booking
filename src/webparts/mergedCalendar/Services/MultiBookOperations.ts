@@ -22,7 +22,7 @@ export const getAllPeriods = async (context: WebPartContext, periodsList: string
 };
 
 export const getSchoolCategory = (calUrl:string) => { // elementary or secondary
-    // calUrl = "https://pdsb1.sharepoint.com/sites/Rooms/2132/"; // for testing
+   // calUrl = "https://pdsb1.sharepoint.com/sites/Rooms/2132/"; // for testing
     calUrl = calUrl.toLowerCase();
     let isDemo = calUrl.indexOf('/rooms/') === -1 ?  true : false;
     let schoolLoc : string;
@@ -94,7 +94,7 @@ export const getBookedEvents =
         ) : Promise <{}[]> => {
     
     startDate = startDate.substring(0, startDate.indexOf('T')) + "T00:00:00.0000000";
-    endDate = endDate.substring(0, endDate.indexOf('T')) + "T00:00:00.0000000";
+    endDate = endDate.substring(0, endDate.indexOf('T')) + "T12:00:00.0000000";
 
     const restApiUrl :string = "/_api/web/lists/getByTitle('"+calSettings.CalName+"')/items";
     //const restApiParamsRoom: string = `?$select=ID,Title,Author/EMail,EventDate,EndDate,Location,Description,fAllDayEvent,fRecurrence,RecurrenceData,Status,AddToMyCal,RoomName/ColorCalculated,RoomName/ID,RoomName/Title,Periods/ID,Periods/EndTime,Periods/Title,Periods/StartTime&$expand=RoomName,Periods,Author&$filter=RoomName/ID eq '${roomId}' and Periods/ID eq '${periodId}' and EventDate ge '${startDate}' and EventDate le '${endDate}'&$orderby=EventDate desc&$top=1000`;
@@ -190,6 +190,7 @@ export const mergeBookings = (existingBookings, multiBookings, multiBookingsFiel
                         conflictTitle : existingBooking.title,
                         conflictAuthor : existingBooking.author,
                         conflictId : existingBooking.id,
+                        graphId: existingBooking.graphId
                     });
                 isConflictBool = true;
                 }
@@ -209,6 +210,7 @@ export const mergeBookings = (existingBookings, multiBookings, multiBookingsFiel
                 conflictTitle : null,
                 conflictAuthor : null,
                 conflictId : null,
+                graphId: null
             });
         }
     }
