@@ -303,6 +303,7 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
   const handleDateClick = (arg:any) =>{    
     if(arg.event._def.extendedProps.roomId){
       const evDetails: any = formatEvDetails(arg);
+      console.log("arg", arg);
       console.log("evDetails date_click", evDetails);
       setEventDetailsRoom(evDetails);
       setSelectedPeriod(evDetails.PeriodId);
@@ -474,7 +475,8 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
     setBookFormMode('Edit');
   };
   const onDeleteBookingClickHandler = (eventDetailsParam: any) =>{
-    deleteItem(props.context, roomsCalendar, eventDetailsParam).then((deletedData)=>{
+    // console.log("eventDetailsParam", eventDetailsParam);
+    deleteItem(props.context, roomsCalendar, eventDetailsParam.EventId, eventDetailsParam).then((deletedData)=>{
       const callback = () =>{
         dismissPanelBook();
         popToast('The Event Booking is successfully deleted!');   

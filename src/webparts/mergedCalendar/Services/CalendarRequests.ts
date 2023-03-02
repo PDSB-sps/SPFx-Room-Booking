@@ -154,7 +154,7 @@ export const getDefaultCals = async (context: WebPartContext, calSettings:{CalTy
                         className: "eventHidden",
                         calendar: calSettings.Title,
                         calendarColor: calSettings.BgColorHex,
-                        graphId: result.GraphID
+                        GraphId: result.GraphID
                     });
                 });
             }
@@ -206,7 +206,7 @@ export const getRoomsCal = async (context: WebPartContext, calSettings:{CalType:
                         period: result.Periods.Title,
                         periodId: result.Periods.ID,
                         addToCal: result.AddToMyCal,
-                        graphId: result.GraphID
+                        GraphId: result.GraphID
                     });
                 });
             }

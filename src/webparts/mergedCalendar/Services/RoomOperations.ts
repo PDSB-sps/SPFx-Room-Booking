@@ -431,7 +431,7 @@ const deleteGraphItem = async (context: WebPartContext, itemId: any) => {
 export const deleteItem = async (context: WebPartContext, listName: string, itemID: string, itemDetails?: any) => {
     console.log("itemDetails", itemDetails);
     const spDeleteResp = await deleteSPItem(context, listName, itemID);
-    const grphDeleteResp = itemDetails.graphId ? await deleteGraphItem(context, itemDetails.graphId) : null;
+    const grphDeleteResp = itemDetails.GraphId ? await deleteGraphItem(context, itemDetails.GraphId) : null;
     return Promise.all([spDeleteResp, grphDeleteResp]);
 };
 
@@ -528,11 +528,11 @@ const updateGraphSPEvent = async (context: WebPartContext, roomsCalListName: str
 
     return Promise.all([graphPostResponse, spPostResponse]);
 };
-export const updateEvent = async (context: WebPartContext, roomsCalListName: string, itemDetails: any, eventDetails: any, eventDetailsRoom: any) => {
-    if(eventDetails.addToCalField){
-        return updateGraphSPEvent(context, roomsCalListName, itemDetails, eventDetails, eventDetailsRoom);
+export const updateEvent = async (context: WebPartContext, roomsCalListName: string, itemDetails: any, formFields: any, eventDetailsRoom: any) => {
+    if(formFields.addToCalField){
+        return updateGraphSPEvent(context, roomsCalListName, itemDetails, formFields, eventDetailsRoom);
     }else{
-        const spResponse = await updateSPEvent(context, roomsCalListName, itemDetails, eventDetails, eventDetailsRoom, null);
+        const spResponse = await updateSPEvent(context, roomsCalListName, itemDetails, formFields, eventDetailsRoom, null);
         if (itemDetails.GraphId){
             const graphResponse = await deleteGraphItem(context, itemDetails.GraphId);
             return Promise.all([spResponse, graphResponse]);

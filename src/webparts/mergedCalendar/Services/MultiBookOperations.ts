@@ -22,7 +22,7 @@ export const getAllPeriods = async (context: WebPartContext, periodsList: string
 };
 
 export const getSchoolCategory = (calUrl:string) => { // elementary or secondary
-   // calUrl = "https://pdsb1.sharepoint.com/sites/Rooms/2132/"; // for testing
+    // calUrl = "https://pdsb1.sharepoint.com/sites/Rooms/2132/"; // for testing
     calUrl = calUrl.toLowerCase();
     let isDemo = calUrl.indexOf('/rooms/') === -1 ?  true : false;
     let schoolLoc : string;
@@ -128,7 +128,7 @@ export const getBookedEvents =
                         periodId: result.Periods.ID,
                         addToCal: result.AddToMyCal,
                         author: result.Author.EMail,
-                        graphId: result.GraphID
+                        GraphId: result.GraphID
                     });
                 });
             }
@@ -190,7 +190,7 @@ export const mergeBookings = (existingBookings, multiBookings, multiBookingsFiel
                         conflictTitle : existingBooking.title,
                         conflictAuthor : existingBooking.author,
                         conflictId : existingBooking.id,
-                        graphId: existingBooking.graphId
+                        GraphId: existingBooking.GraphId
                     });
                 isConflictBool = true;
                 }
@@ -210,7 +210,7 @@ export const mergeBookings = (existingBookings, multiBookings, multiBookingsFiel
                 conflictTitle : null,
                 conflictAuthor : null,
                 conflictId : null,
-                graphId: null
+                GraphId: null
             });
         }
     }
@@ -276,7 +276,7 @@ const addSPBooking = async (context: WebPartContext, roomsCalListName: string, f
         RoomNameId: roomInfo.Id,
         Location: roomInfo.Title,
         AddToMyCal: formFields.addToCalField,
-        GraphID: graphID
+        GraphId: graphID
     });
     const spOptions: ISPHttpClientOptions = {
         headers:{

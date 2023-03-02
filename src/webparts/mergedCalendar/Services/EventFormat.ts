@@ -59,7 +59,7 @@ export const formatEvDetails = (ev:any) : {} =>{
         AddToMyCal: event._def.extendedProps.addToCal,
         Calendar: event._def.extendedProps.calendar,
         Color: event._def.extendedProps.calendarColor,
-        GraphId: event._def.extendedProps.graphId
+        GraphId: event._def.extendedProps.GraphId
     };
 
     return evDetails;
