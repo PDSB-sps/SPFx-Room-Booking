@@ -787,13 +787,13 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
 
     if (!hideConfirmMultiDlg) toggleConfirmMultiDlg();
 
-    console.log("merged bookings", mergedBookings);
     const finalBookings = [];
     const conflictBookingsIds = [], conflictBookings = [];
     const finalBookingPromises = []; 
+    const mergedBookingIndices = [];
 
     for (let booking of mergedBookings){
-      if (booking.overwrite){
+      if (booking.overwrite && mergedBookingIndices.indexOf(booking.index) === -1){
         finalBookings.push({
           titleField: formFieldMultiBk.titleField,
           descpField: formFieldMultiBk.descpField,
@@ -806,13 +806,20 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
         conflictBookingsIds.push(booking.conflictId);
         conflictBookings.push(booking);
       }
+
+      mergedBookingIndices.push(booking.index);
     }
+
+    // console.log("merged bookings", mergedBookings);
+    // console.log("finalBookings", finalBookings);
+    // console.log("conflictBookings", conflictBookings);
+
+    
+    // bookings to be created
     for (let finalBooking of finalBookings){
       finalBookingPromises.push(addBooking(props.context, roomsCalendar, finalBooking, {Id: formFieldMultiBk.roomField.key, Title: formFieldMultiBk.roomField.text}));
     }
-    // for (let conflictId of conflictBookingsIds){
-    //   finalBookingPromises.push(deleteItem(props.context, roomsCalendar, conflictId));
-    // }
+    // bookings to be deleted
     for (let conflictBooking of conflictBookings){
       finalBookingPromises.push(deleteItem(props.context, roomsCalendar, conflictBooking.conflictId, conflictBooking));
     }
@@ -823,6 +830,8 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
       };
       loadLatestCalendars(callback);
     });
+    
+
   };
 
   return(
