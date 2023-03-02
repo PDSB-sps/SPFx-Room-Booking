@@ -43,6 +43,9 @@ export default function IMultiBook(props: IMultiBookProps) {
         yearPickerHeaderAriaLabel: '{0}, select to change the month',
         isOutOfBoundsErrorMessage: props.errorMsgField.endDateField,
     };
+    // console.log("multibook props.formField", props.formField);
+    // console.log("props.schoolNum", props.schoolNum);
+    // console.log("props.schoolCategory", props.schoolCategory);
 
     return(
         <React.Fragment>
@@ -79,9 +82,11 @@ export default function IMultiBook(props: IMultiBookProps) {
                         label="School Cycle" 
                         required
                         selectedKey = {props.schoolCategory === 'Sec' ? props.schoolNum : undefined}
+                        // defaultSelectedKey = {props.schoolCategory === 'Sec' ? props.schoolNum : undefined}
                         options={props.schoolCycleOptions} 
                         onChange={props.onChangeFormField('schoolCycleField')} 
                         errorMessage={props.errorMsgField.schoolCycleField} 
+                        // disabled = {props.schoolCategory === 'Sec'}
                     />
                     <Dropdown 
                         placeholder="Select a room" 
