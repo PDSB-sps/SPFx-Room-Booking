@@ -132,27 +132,38 @@ export default function IRoomBook (props:IRoomBookProps) {
     const onStartTimeChange = React.useCallback(
         (event: React.FormEvent<IComboBox>, option?: IComboBoxOption, index?: number, value?: string): void => {
           let key = option?.key;
+          let text = option?.text;
           if (!option && value) {
             // If allowFreeform is true, the newly selected option might be something the user typed that
             // doesn't exist in the options list yet. So there's extra work to manually add it.
-            key = `${newStartKey++}`;
+            //key = `${newStartKey++}`;
+            key = value;
+            text = value;
             setStartTimeOptions(prevOptions => [...prevOptions, { key: value, text: value }]);
           }
           setStartSelectedKey(key);
-          props.onChangeFormTimesField('startTimeField', value, value);
+          props.onChangeFormTimesField('startTimeField', key, text);
         }
     ,[]);
     const onEndTimeChange = React.useCallback(
         (event: React.FormEvent<IComboBox>, option?: IComboBoxOption, index?: number, value?: string): void => {
+            console.log("event -- in onEndTimeChange", event);
+            console.log("option -- in onEndTimeChange", option);
+            console.log("value -- in onEndTimeChange", value);
           let key = option?.key;
+          let text = option?.text;
+          console.log("key in onEndTimeChange", key);
+
           if (!option && value) {
             // If allowFreeform is true, the newly selected option might be something the user typed that
             // doesn't exist in the options list yet. So there's extra work to manually add it.
-            key = `${newEndKey++}`;
-            setEndTimeOptions(prevOptions => [...prevOptions, { key: value, text: value }]);
+            //key = `${newEndKey++}`;
+            key = value;
+            text = value;
+            setEndTimeOptions(prevOptions => [...prevOptions, { key: key, text: value }]);
           }
           setEndSelectedKey(key);
-          props.onChangeFormTimesField('endTimeField', value, value);
+          props.onChangeFormTimesField('endTimeField', key, text);
         }
     ,[]);
 
@@ -170,7 +181,10 @@ export default function IRoomBook (props:IRoomBookProps) {
     const [hideDialog, { toggle: toggleHideDialog }] = useBoolean(true);
     const panelHdrColor = props.bookFormMode === "New" ? props.roomInfo.Colour : props.eventDetailsRoom.RoomColor;
 
+    const isPeriodKeyEmpty = props.formField.periodField.key == '' || props.formField.periodField.key == undefined;
+
     console.log("props.formField", props.formField);
+    // console.log("props.bookFormMode", props.bookFormMode);
     // console.log("props.formField.startTimeField.key", props.formField.startTimeField.key);
     // console.log("props.formField.endTimeField.key", props.formField.endTimeField.key);
     // console.log("props.roomInfo", props.roomInfo);
@@ -243,48 +257,49 @@ export default function IRoomBook (props:IRoomBookProps) {
                     className={disabledControl ? roomStyles.disabledCtrl : ''}
                     minDate={new Date()}
                 />
-                {props.isPeriods ?
-                <Dropdown 
-                    placeholder="Select a period" 
-                    label="Period" 
-                    required
-                    selectedKey={props.formField.periodField ? props.formField.periodField.key : undefined}
-                    options={props.periodOptions} 
-                    onChange={props.onChangeFormField('periodField')} 
-                    errorMessage={props.errorMsgField.periodField} 
-                    disabled={disabledControl}
-                    className={disabledControl ? roomStyles.disabledCtrl : ''}
-                />     
-                :
-                <>
-                    <Stack horizontal tokens={stackTokens} styles={stackStyles}>
-                        <ComboBox
-                            label="Start Time"
-                            allowFreeform
-                            autoComplete={'on'}
-                            options={startTimeOptions}
-                            onChange={onStartTimeChange}
-                            defaultSelectedKey={props.formField.startTimeField ? props.formField.startTimeField.key : startSelectedKey}
-                            text={props.formField.startTimeField ? props.formField.startTimeField.text : startSelectedKey}
-                            useComboBoxAsMenuWidth
-                            required
-                            disabled={disabledControl}
-                        />
-                        <ComboBox
-                            label="End Time"
-                            allowFreeform
-                            autoComplete={'on'}
-                            options={endTimeOptions}
-                            onChange={onEndTimeChange}
-                            defaultSelectedKey={props.formField.endTimeField ? props.formField.endTimeField.key : endSelectedKey}
-                            text={props.formField.endTimeField ? props.formField.endTimeField.text : endSelectedKey}
-                            useComboBoxAsMenuWidth
-                            required
-                            disabled={disabledControl}
-                        />
-                    </Stack>
-                    <p className={roomStyles.formAstrisk}>{props.errorMsgField.startEndTimeFields}</p>
-                </>
+                {((props.isPeriods && props.bookFormMode === 'New') || (props.bookFormMode !== 'New' && !isPeriodKeyEmpty )) &&
+                    <Dropdown 
+                        placeholder="Select a period" 
+                        label="Period" 
+                        required
+                        selectedKey={props.formField.periodField ? props.formField.periodField.key : undefined}
+                        options={props.periodOptions} 
+                        onChange={props.onChangeFormField('periodField')} 
+                        errorMessage={props.errorMsgField.periodField} 
+                        disabled={disabledControl}
+                        className={disabledControl ? roomStyles.disabledCtrl : ''}
+                    />     
+                }
+                {((!props.isPeriods && props.bookFormMode === 'New') || (props.bookFormMode !== 'New' && isPeriodKeyEmpty) ) &&
+                    <>
+                        <Stack horizontal tokens={stackTokens} styles={stackStyles}>
+                            <ComboBox
+                                label="Start Time"
+                                allowFreeform
+                                autoComplete={'on'}
+                                options={startTimeOptions}
+                                onChange={onStartTimeChange}
+                                defaultSelectedKey={props.formField.startTimeField ? props.formField.startTimeField.key : startSelectedKey}
+                                text={props.formField.startTimeField ? props.formField.startTimeField.text : startSelectedKey}
+                                useComboBoxAsMenuWidth
+                                required
+                                disabled={disabledControl}
+                            />
+                            <ComboBox
+                                label="End Time"
+                                allowFreeform
+                                autoComplete={'on'}
+                                options={endTimeOptions}
+                                onChange={onEndTimeChange}
+                                defaultSelectedKey={props.formField.endTimeField ? props.formField.endTimeField.key : endSelectedKey}
+                                text={props.formField.endTimeField ? props.formField.endTimeField.text : endSelectedKey}
+                                useComboBoxAsMenuWidth
+                                required
+                                disabled={disabledControl}
+                            />
+                        </Stack>
+                        <p className={roomStyles.formAstrisk}>{props.errorMsgField.startEndTimeFields}</p>
+                    </>
                 }              
                 <Toggle 
                     label="Add this event's booking to my Calendar" 
