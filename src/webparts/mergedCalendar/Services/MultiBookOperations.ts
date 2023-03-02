@@ -22,7 +22,7 @@ export const getAllPeriods = async (context: WebPartContext, periodsList: string
 };
 
 export const getSchoolCategory = (calUrl:string) => { // elementary or secondary
-    // calUrl = "https://pdsb1.sharepoint.com/sites/Rooms/1234/"; // for testing
+    // calUrl = "https://pdsb1.sharepoint.com/sites/Rooms/2132/"; // for testing
     calUrl = calUrl.toLowerCase();
     let isDemo = calUrl.indexOf('/rooms/') === -1 ?  true : false;
     let schoolLoc : string;
@@ -98,7 +98,7 @@ export const getBookedEvents =
 
     const restApiUrl :string = "/_api/web/lists/getByTitle('"+calSettings.CalName+"')/items";
     //const restApiParamsRoom: string = `?$select=ID,Title,Author/EMail,EventDate,EndDate,Location,Description,fAllDayEvent,fRecurrence,RecurrenceData,Status,AddToMyCal,RoomName/ColorCalculated,RoomName/ID,RoomName/Title,Periods/ID,Periods/EndTime,Periods/Title,Periods/StartTime&$expand=RoomName,Periods,Author&$filter=RoomName/ID eq '${roomId}' and Periods/ID eq '${periodId}' and EventDate ge '${startDate}' and EventDate le '${endDate}'&$orderby=EventDate desc&$top=1000`;
-    const restApiParamsRoom: string = `?$select=ID,Title,Author/EMail,EventDate,EndDate,Location,Description,fAllDayEvent,fRecurrence,RecurrenceData,Status,AddToMyCal,RoomName/ColorCalculated,RoomName/ID,RoomName/Title,Periods/ID,Periods/EndTime,Periods/Title,Periods/StartTime&$expand=RoomName,Periods,Author&$filter=RoomName/ID eq '${roomId}' and EventDate ge '${startDate}' and EventDate le '${endDate}'&$orderby=EventDate desc&$top=1000`;
+    const restApiParamsRoom: string = `?$select=ID,Title,GraphID,Author/EMail,EventDate,EndDate,Location,Description,fAllDayEvent,fRecurrence,RecurrenceData,Status,AddToMyCal,RoomName/ColorCalculated,RoomName/ID,RoomName/Title,Periods/ID,Periods/EndTime,Periods/Title,Periods/StartTime&$expand=RoomName,Periods,Author&$filter=RoomName/ID eq '${roomId}' and EventDate ge '${startDate}' and EventDate le '${endDate}'&$orderby=EventDate desc&$top=1000`;
     const restUrl = context.pageContext.web.absoluteUrl + `/_api/web/lists/getByTitle('Events')/items` + restApiParamsRoom;
     
     let calEvents : {}[] = [] ;
@@ -114,7 +114,7 @@ export const getBookedEvents =
             
         if (_data.ok){
             const calResult = await _data.json();
-            // console.log("calResult", calResult);
+            console.log("getBookedEvents -- calResult", calResult);
             if(calResult){
                 calResult.d.results.map((result:any)=>{
                     calEvents.push({
@@ -127,7 +127,8 @@ export const getBookedEvents =
                         period: result.Periods.Title,
                         periodId: result.Periods.ID,
                         addToCal: result.AddToMyCal,
-                        author: result.Author.EMail
+                        author: result.Author.EMail,
+                        graphId: result.GraphID
                     });
                 });
             }
@@ -211,6 +212,8 @@ export const mergeBookings = (existingBookings, multiBookings, multiBookingsFiel
             });
         }
     }
+
+    console.log("mergedBookingsList", mergedBookingsList);
 
     return {isConflictBool, mergedBookingsList};
 };

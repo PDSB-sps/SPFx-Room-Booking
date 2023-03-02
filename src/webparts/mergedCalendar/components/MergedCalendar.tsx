@@ -82,6 +82,7 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
   const [isCheckBookingClicked, setIsCheckBookingClicked] = React.useState(false);
   const [hideConfirmMultiDlg, { toggle: toggleConfirmMultiDlg }] = useBoolean(true);
   const [isMultiBookingDataLoading, { toggle: toggleIsMultiBookingDataLoading }] = useBoolean(false);
+  const secSchoolRotary = 'School Rotary';
 
   const ACTIONS = {
     EVENT_DETAILS_TOGGLE : "event-details-toggle",
@@ -251,6 +252,9 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
   };
 
   const onChangeFormTimesField = (field: string, key: string, text: string) => {
+    // console.log("field", field);
+    // console.log("key", key);
+    // console.log("text", text);
     setFormField(prevState => {
       return {
         ...prevState,
@@ -613,7 +617,8 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
   const [formFieldMultiBk, setFormFieldMultiBk] = React.useState({
     titleField: "",
     descpField: "",
-    schoolCycleField : {key: '', text:''}, 
+    schoolCycleField : {key: schoolCategory === 'Sec' ? schoolNum : '', text: schoolCategory === 'Sec' ? secSchoolRotary : ''}, 
+    // schoolCycleField : {key: '', text:''},
     schoolCycleDayField : {key: '', text:''}, 
     periodField : {key: '', text:'', start:new Date(), end:new Date()},
     roomField : {key: '', text:''},
@@ -646,7 +651,8 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
     setFormFieldMultiBk({
       titleField: "",
       descpField: "",
-      schoolCycleField : {key: '', text:''},
+      schoolCycleField : {key: schoolCategory === 'Sec' ? schoolNum : '', text: schoolCategory === 'Sec' ? secSchoolRotary : ''},
+      // schoolCycleField : {key: '', text:''},
       schoolCycleDayField : {key: '', text:''},
       periodField : {key: '', text:'', start:new Date(), end:new Date()},
       roomField : {key: '', text:''},
@@ -687,15 +693,22 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
     }
     if (allFieldsValid) callback();
   };
+
   const schoolCycleOptions = schoolCategory === 'Elem' 
     ? [{key: 'E5Day', text: '5 Day'}, {key: 'E10Day', text: '10 Day'}]
-    : [{key: schoolNum, text: 'School Rotary'}];
+    : [{key: schoolNum, text: secSchoolRotary}];
 
   const selectDayCycleHandler = (schoolRotary: string) => {
     getSchoolCycles(props.context, schoolRotary).then(results => {
       setCycleDaysCalUrl(results.calUrl);
       setCycleDays(results.cycleDays.map(item => ({key: `Day${item}`, text: `Day ${item}`})));
     });
+    // setFormFieldMultiBk(prev => {
+    //   return {
+    //     ...prev,
+    //     ['schoolCycleField'] : {key : schoolNum, text: secSchoolRotary}
+    //   }
+    // })
   };
   const onChangeFormFieldMultiBk = (formFieldParam: string) =>{
     return (event: any, newValue?: any)=>{
@@ -774,9 +787,9 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
 
     if (!hideConfirmMultiDlg) toggleConfirmMultiDlg();
 
-    // console.log("final bookings", mergedBookings);
+    console.log("merged bookings", mergedBookings);
     const finalBookings = [];
-    const conflictBookingsIds = [];
+    const conflictBookingsIds = [], conflictBookings = [];
     const finalBookingPromises = []; 
 
     for (let booking of mergedBookings){
@@ -791,13 +804,17 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
       }
       if (booking.overwrite && booking.conflict){
         conflictBookingsIds.push(booking.conflictId);
+        conflictBookings.push(booking);
       }
     }
     for (let finalBooking of finalBookings){
       finalBookingPromises.push(addBooking(props.context, roomsCalendar, finalBooking, {Id: formFieldMultiBk.roomField.key, Title: formFieldMultiBk.roomField.text}));
     }
-    for (let conflictId of conflictBookingsIds){
-      finalBookingPromises.push(deleteItem(props.context, roomsCalendar, conflictId));
+    // for (let conflictId of conflictBookingsIds){
+    //   finalBookingPromises.push(deleteItem(props.context, roomsCalendar, conflictId));
+    // }
+    for (let conflictBooking of conflictBookings){
+      finalBookingPromises.push(deleteItem(props.context, roomsCalendar, conflictBooking.conflictId, conflictBooking));
     }
     Promise.all(finalBookingPromises).then(values => {
       const callback = () =>{

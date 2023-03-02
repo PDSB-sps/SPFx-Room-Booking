@@ -108,7 +108,7 @@ export const getPeriods = async (context: WebPartContext, periodsList: string, r
     // console.log("resultsEvents.value", resultsEvents.value)
     // console.log("bookedPeriods", bookedPeriods);
     // console.log("selectedPeriod", selectedPeriod);
-    console.log("adjustPeriods", adjustPeriods(results.value, bookedPeriods));
+    // console.log("adjustPeriods", adjustPeriods(results.value, bookedPeriods));
 
     return adjustPeriods(results.value, bookedPeriods);
 };
@@ -156,7 +156,7 @@ export const getChosenDate = (startPeriodField: any, endPeriodField: any, formFi
     chosenEndDate.setHours(endPeriodHr);
     chosenEndDate.setMinutes(endPeriodMin);
 
-    console.log("[chosenStartDate, chosenEndDate]", [chosenStartDate, chosenEndDate]);
+    // console.log("[chosenStartDate, chosenEndDate]", [chosenStartDate, chosenEndDate]);
 
     return[chosenStartDate, chosenEndDate];
 };
@@ -310,7 +310,7 @@ const addSPEvent = async (context: WebPartContext, roomsCalListName: string, for
     console.log("addSPEvent Fnc - formFields", formFields);
     
     let startTime: string, endTime: string;
-    if (formFields.periodField.key == ''){
+    if (formFields.periodField.key == '' || formFields.periodField.key == undefined){
         startTime = parseCustomTimes(formFields.startTimeField.key);
         endTime = parseCustomTimes(formFields.endTimeField.key);
     }else{
@@ -325,7 +325,7 @@ const addSPEvent = async (context: WebPartContext, roomsCalListName: string, for
         Description: formFields.descpField,
         EventDate: chosenDate[0],
         EndDate: chosenDate[1],
-        PeriodsId: formFields.periodField.key == '' ? null : formFields.periodField.key,
+        PeriodsId: formFields.periodField.key == '' || formFields.periodField.key == undefined ? null : formFields.periodField.key,
         RoomNameId: roomInfo.Id,
         Location: roomInfo.Title,
         AddToMyCal: formFields.addToCalField,
@@ -349,7 +349,7 @@ const addSPEvent = async (context: WebPartContext, roomsCalListName: string, for
 const addGraphSPEvent = async (context: WebPartContext, roomsCalListName: string, formFields: any, roomInfo: any) => {
     
     let startTime: string, endTime: string;
-    if (formFields.periodField.key == ''){
+    if (formFields.periodField.key == '' || formFields.periodField.key == undefined){
         startTime = parseCustomTimes(formFields.startTimeField.key);
         endTime = parseCustomTimes(formFields.endTimeField.key);
     }else{
@@ -357,6 +357,7 @@ const addGraphSPEvent = async (context: WebPartContext, roomsCalListName: string
         endTime = formFields.periodField.end;
     }
     const chosenDate = getChosenDate(startTime, endTime, formFields.dateField);
+    const timeZone = "Eastern Standard Time";
 
     const event = {
         "subject": formFields.titleField,
@@ -364,13 +365,15 @@ const addGraphSPEvent = async (context: WebPartContext, roomsCalListName: string
             "contentType": "HTML",
             "content": formFields.descpField
         },
+        "originalStartTimeZone" : timeZone,
+        "originalEndTimeZone" : timeZone,
         "start": {
             "dateTime": chosenDate[0],
-            "timeZone": "Eastern Standard Time"
+            "timeZone": timeZone
         },
         "end": {
             "dateTime": chosenDate[1],
-            "timeZone": "Eastern Standard Time"
+            "timeZone": timeZone
         },
         "location": {
             "displayName": roomInfo.Title + ' - ' + formFields.periodField.text
@@ -386,7 +389,7 @@ const addGraphSPEvent = async (context: WebPartContext, roomsCalListName: string
     };
 
     const grapClient = await context.msGraphClientFactory.getClient();
-    const graphPostResponse = await grapClient.api("/me/events").post(event);
+    const graphPostResponse = await grapClient.api("/me/events").header('Prefer','outlook.timezone="Eastern Standard Time"').post(event);
     const spPostResponse = await addSPEvent(context, roomsCalListName, formFields, roomInfo, graphPostResponse.id);
     
     return Promise.all([graphPostResponse, spPostResponse]);
@@ -425,17 +428,20 @@ const deleteGraphItem = async (context: WebPartContext, itemId: any) => {
     console.log('Graph Item is deleted from outlook calendar!', _data);
     return _data;
 };
-export const deleteItem = async (context: WebPartContext, listName: string, itemDetails: any) => {
-    const spDeleteResp = await deleteSPItem(context, listName, itemDetails.EventId);
-    const grphDeleteResp = itemDetails.GraphId ? await deleteGraphItem(context, itemDetails.GraphId) : null;
+export const deleteItem = async (context: WebPartContext, listName: string, itemID: string, itemDetails?: any) => {
+    console.log("itemDetails", itemDetails);
+    const spDeleteResp = await deleteSPItem(context, listName, itemID);
+    const grphDeleteResp = itemDetails.graphId ? await deleteGraphItem(context, itemDetails.graphId) : null;
     return Promise.all([spDeleteResp, grphDeleteResp]);
 };
 
 // Update Event (SP & Graph)
 const updateSPEvent = async (context: WebPartContext, roomsCalListName: string, itemDetails: any, formFields: any, eventDetailsRoom: any, graphID?:any) => {
     
+    // console.log("formFields", formFields);
+
     let startTime: string, endTime: string;
-    if (formFields.periodField.key == ''){
+    if (formFields.periodField.key == '' || formFields.periodField.key == undefined){
         startTime = parseCustomTimes(formFields.startTimeField.key);
         endTime = parseCustomTimes(formFields.endTimeField.key);
     }else{
@@ -443,6 +449,7 @@ const updateSPEvent = async (context: WebPartContext, roomsCalListName: string, 
         endTime = formFields.periodField.end;
     }
     const chosenDate = getChosenDate(startTime, endTime, formFields.dateField);
+    // console.log("chosenDate", chosenDate);
 
     const restUrl = `${context.pageContext.web.absoluteUrl}/_api/web/lists/getByTitle('${roomsCalListName}')/items(${itemDetails.EventId})`,
         body: string = JSON.stringify({
@@ -450,7 +457,7 @@ const updateSPEvent = async (context: WebPartContext, roomsCalListName: string, 
             Description: formFields.descpField,
             EventDate: chosenDate[0],
             EndDate: chosenDate[1],
-            PeriodsId: formFields.periodField.key == '' ? null : formFields.periodField.key,
+            PeriodsId: formFields.periodField.key == '' || formFields.periodField.key == undefined ? null : formFields.periodField.key,
             RoomNameId: eventDetailsRoom.RoomId,
             Location: eventDetailsRoom.Room,
             AddToMyCal: formFields.addToCalField,
@@ -467,15 +474,17 @@ const updateSPEvent = async (context: WebPartContext, roomsCalListName: string, 
             body: body
         };
     
+    console.log("update fnc body", body);
+
     const spResponse = await context.spHttpClient.post(restUrl, SPHttpClient.configurations.v1, spOptions);
     if (spResponse.ok) console.log('Event Booking is updated!');
     
     return spResponse;
 };
 const updateGraphSPEvent = async (context: WebPartContext, roomsCalListName: string, itemDetails: any, formFields: any, eventDetailsRoom: any) => {
-    
+    console.log("updateGraphSPEvent -- itemDetails", itemDetails);
     let startTime: string, endTime: string;
-    if (formFields.periodField.key == ''){
+    if (formFields.periodField.key == '' || formFields.periodField.key == undefined){
         startTime = parseCustomTimes(formFields.startTimeField.key);
         endTime = parseCustomTimes(formFields.endTimeField.key);
     }else{
