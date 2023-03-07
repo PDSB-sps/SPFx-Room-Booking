@@ -261,9 +261,8 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
         [field] : {key: key, text: text}
       };
     });
+    setErrorMsgField({titleField: "", periodField: "", startEndTimeFields: ""});
   };
-
-
   const onChangeFormField = (formFieldParam: string) =>{
     return (event: any, newValue?: any)=>{
 
