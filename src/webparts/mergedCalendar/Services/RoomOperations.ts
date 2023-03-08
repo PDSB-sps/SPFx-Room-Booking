@@ -2,6 +2,7 @@ import {WebPartContext} from "@microsoft/sp-webpart-base";
 import { SPPermission } from "@microsoft/sp-page-context";
 import {SPHttpClient, ISPHttpClientOptions, MSGraphClient} from "@microsoft/sp-http";
 import * as moment from 'moment';
+import {isPeriodConflict} from './MultiBookOperations';
 
 export const getRooms = async (context: WebPartContext, roomsList: string) =>{
     console.log("Get Rooms Function");
@@ -541,6 +542,33 @@ export const updateEvent = async (context: WebPartContext, roomsCalListName: str
     }
 };
 
+
+export const getDayRoomEvents = async (context: WebPartContext, roomId: string, date: Date) => {
+    
+    const startDate = date.toISOString().substring(0, date.toISOString().indexOf('T')) + "T00:00:00.0000000";
+    const endDate = date.toISOString().substring(0, date.toISOString().indexOf('T')) + "T12:00:00.0000000";
+
+    const restUrl = `${context.pageContext.web.absoluteUrl}/_api/web/lists/getByTitle('Events')/items?$select=Title,EventDate,EndDate,RoomName/ID&$expand=RoomName&$filter=RoomName/ID eq '${roomId}' and EventDate ge '${startDate}' and EventDate le '${endDate}'`;
+    const results = await context.spHttpClient.get(restUrl, SPHttpClient.configurations.v1).then(response => response.json());
+
+    console.log("getDayBookedEvents", results.value);
+    return results.value;
+};
+export const canBookRoom = (existingBookings : any, startTime: string, endTime: string) => {
+
+    const newBookingTime = {start: parseCustomTimes(startTime), end: parseCustomTimes(endTime)};
+    let canBook = true;
+
+    console.log("newBookingTime", newBookingTime);
+    console.log("existingBookings", existingBookings);
+
+    for (let existingBooking of existingBookings){
+        if (isPeriodConflict(newBookingTime, {start: existingBooking.EventDate, end: existingBooking.EndDate})){
+            return false;
+        }
+    }
+    return canBook;
+};
 
 
 export const isEventCreator = async (context: WebPartContext, roomsCalListName: string, eventId: any) =>{

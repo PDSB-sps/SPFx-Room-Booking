@@ -11,7 +11,7 @@ import {addToMyGraphCal, getMySchoolCalGUID, reRenderCalendars, getLegendChksSta
 import {getGraphCalsMultiBook, getAllPeriods, getSchoolCategory, getSchoolCycles, getBookedEvents, mergeBookings, addBooking} from '../Services/MultiBookOperations';
 import {formatEvDetails} from '../Services/EventFormat';
 import {setWpData} from '../Services/WpProperties';
-import {getRooms, getPeriods, getLocationGroup, getGuidelines, getRoomsCalendarName, addEvent, deleteItem, updateEvent, isEventCreator, getRoomInfo, getEventAttendees, validateTimes} from '../Services/RoomOperations';
+import {getRooms, getPeriods, getLocationGroup, getGuidelines, getRoomsCalendarName, addEvent, deleteItem, updateEvent, isEventCreator, getRoomInfo, getEventAttendees, validateTimes, getDayRoomEvents, canBookRoom} from '../Services/RoomOperations';
 import {isUserManage} from '../Services/RoomOperations';
 
 import ICalendar from './ICalendar/ICalendar';
@@ -458,12 +458,33 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
           }
         });
       }else{
-        addEvent(props.context, roomsCalendar, formField, roomInfo).then(()=>{
-          const callback = () =>{
-            dismissPanelBook();
-            popToast('A New Event Booking is successfully added!');                              
-          };
-          loadLatestCalendars(callback);
+        getDayRoomEvents(props.context, roomInfo.Id, formField.dateField).then(existingBookings => {
+          if (canBookRoom(existingBookings, formField.startTimeField.key, formField.endTimeField.key)){
+            
+            addEvent(props.context, roomsCalendar, formField, roomInfo).then(()=>{
+              const callback = () =>{
+                dismissPanelBook();
+                popToast('A New Event Booking is successfully added!');                              
+              };
+              loadLatestCalendars(callback);
+            });
+            /*
+            setErrorMsgField(prevState => {
+              return {
+                ...prevState,
+                ['startEndTimeFields'] : "YES CAN BOOK"
+              };
+            });
+            */
+
+          }else{
+            setErrorMsgField(prevState => {
+              return {
+                ...prevState,
+                ['startEndTimeFields'] : "Booking Conflict! Please choose other times."
+              };
+            });
+          }
         });
       }
       
