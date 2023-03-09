@@ -22,7 +22,7 @@ export const getAllPeriods = async (context: WebPartContext, periodsList: string
 };
 
 export const getSchoolCategory = (calUrl:string) => { // elementary or secondary
-    // calUrl = "https://pdsb1.sharepoint.com/sites/Rooms/1234/"; // for testing
+    //calUrl = "https://pdsb1.sharepoint.com/sites/Rooms/1234/"; // for testing
     calUrl = calUrl.toLowerCase();
     let isDemo = calUrl.indexOf('/rooms/') === -1 ?  true : false;
     let schoolLoc : string;

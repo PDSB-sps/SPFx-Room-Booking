@@ -9,10 +9,14 @@ export default function IMultiBookList(props: IMultiBookListProps){
     
     initializeIcons();
 
-    const onToggleHandler = (itemIndex) => {
-        return (ev: React.MouseEvent<HTMLElement>, checked?: boolean) => {
-            props.updateBookings(itemIndex, checked);
-        };
+    // const onToggleHandler = (itemIndex) => {
+    //     return (ev: React.MouseEvent<HTMLElement>, checked?: boolean) => {
+    //         props.updateBookings(itemIndex, checked);
+    //     };
+    // };
+
+    const onToggleHandler = (ev: React.MouseEvent<HTMLElement>, checked?: boolean) => {
+        props.updateBookings(checked);
     };
 
     const columns = [
@@ -56,25 +60,25 @@ export default function IMultiBookList(props: IMultiBookListProps){
             maxWidth: 400,
 			isResizable: true,
 		},
-        {
-			key: "column4",
-			name: "Action",
-			minWidth: 180,
-			maxWidth: 300,
-			isResizable: true,
-            onRender: (item) => (
-                <>
-                    {item.conflict &&
-                        <Toggle
-                            defaultChecked = {false}
-                            onText="Overwrite"
-                            offText="Skip"
-                            onChange={onToggleHandler(item.index)}
-                      />
-                    }
-                </>
-            ),
-		},
+        // {
+		// 	key: "column4",
+		// 	name: "Action",
+		// 	minWidth: 180,
+		// 	maxWidth: 300,
+		// 	isResizable: true,
+        //     onRender: (item) => (
+        //         <>
+        //             {item.conflict &&
+        //                 <Toggle
+        //                     defaultChecked = {false}
+        //                     onText="Overwrite"
+        //                     offText="Skip"
+        //                     onChange={onToggleHandler(item.index)}
+        //               />
+        //             }
+        //         </>
+        //     ),
+		// },
 	];
 
 /*
@@ -148,10 +152,19 @@ export default function IMultiBookList(props: IMultiBookListProps){
             <hr/>
             <h3 className={styles.marginT20}>Bookings</h3>
             {props.isConflict &&
-                <MessageBar messageBarType={MessageBarType.warning}>
-                    Please carefully review your bookings and the existing conflicts. Your bookings will automatically be <i>skipped</i> and will not <i>overwrite</i> the existing ones. 
-                    If you want to change that, please toggle the booking action from <i>skip</i> to <i>overwrite</i>.
-                </MessageBar>
+                <>
+                    <MessageBar messageBarType={MessageBarType.warning}>
+                        Please carefully review your bookings and the existing conflicts. Your bookings will automatically be <i>skipped</i> and will not <i>overwrite</i> the existing ones. 
+                        If you want to change that, please toggle the booking action from <i>skip</i> to <i>overwrite</i>.
+                    </MessageBar>
+                    <br/>
+                    <Toggle
+                        defaultChecked = {false}
+                        onText="Overwrite All"
+                        offText="Skip All"
+                        onChange={onToggleHandler}
+                    />
+                </>
             }
             <DetailsList
                 items={props.bookingList}

@@ -797,14 +797,21 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
     setMergedBookings([]);
     setIsCheckBookingClicked(false);
   };
-  const updateBookings = (itemIndex, checked) => {
+  // const updateBookings = (itemIndex, checked) => {
+  //   setMergedBookings(prevState => {
+  //     return prevState.map(booking => {
+  //       if(booking.index === itemIndex){
+  //         return {...booking, overwrite: checked};
+  //       }else{
+  //         return booking;
+  //       }
+  //     });
+  //   });
+  // };
+  const updateBookings = (checked: boolean) => {
     setMergedBookings(prevState => {
       return prevState.map(booking => {
-        if(booking.index === itemIndex){
-          return {...booking, overwrite: checked};
-        }else{
-          return booking;
-        }
+        return {...booking, overwrite: checked};
       });
     });
   };
