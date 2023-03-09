@@ -225,7 +225,8 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
     addToCalField: false,
     attendees: [],
     startTimeField: {key: '8:00 AM', text:'8:00 AM'},
-    endTimeField:{key: '9:00 AM', text:'9:00 AM'}
+    endTimeField:{key: '9:00 AM', text:'9:00 AM'},
+    isBookedByPeriods: props.isPeriods
   });
   //error handeling
   const [errorMsgField , setErrorMsgField] = React.useState({
@@ -242,7 +243,8 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
       addToCalField: false,
       attendees: [],
       startTimeField: {key: '8:00 AM', text:'8:00 AM'},
-      endTimeField:{key: '9:00 AM', text:'9:00 AM'}
+      endTimeField:{key: '9:00 AM', text:'9:00 AM'},
+      isBookedByPeriods: props.isPeriods
     });
     setErrorMsgField({
       titleField: "",
@@ -336,7 +338,8 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
           dateField : new Date(evDetails.Start),    
           addToCalField: evDetails.AddToMyCal,
           startTimeField: {key: evDetails.Start.substring(evDetails.Start.indexOf(' ')+1), text: evDetails.Start.substring(evDetails.Start.indexOf(' ')+1)},
-          endTimeField: {key: evDetails.End.substring(evDetails.End.indexOf(' ')+1), text: evDetails.End.substring(evDetails.End.indexOf(' ')+1)}
+          endTimeField: {key: evDetails.End.substring(evDetails.End.indexOf(' ')+1), text: evDetails.End.substring(evDetails.End.indexOf(' ')+1)},
+          isBookedByPeriods: evDetails.PeriodId ? true : false
         };
       });    
 

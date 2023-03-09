@@ -47,7 +47,7 @@ export default function IRoomBook (props:IRoomBookProps) {
     const stackTokens = { childrenGap: 10 };
     const stackStyles: Partial<IStackStyles> = { root: { width: '100%' } };
 
-    const [firstDayOfWeek, setFirstDayOfWeek] = React.useState(DayOfWeek.Sunday);
+    const [firstDayOfWeek, setFirstDayOfWeek] = React.useState(DayOfWeek.Monday);
     
     const hours: IComboBoxOption[] = [
         { key: '12 AM', text: '12 AM' },
@@ -189,7 +189,7 @@ export default function IRoomBook (props:IRoomBookProps) {
     // console.log("props.formField.endTimeField.key", props.formField.endTimeField.key);
     // console.log("props.roomInfo", props.roomInfo);
     // console.log("props.eventDetailsRoom", props.eventDetailsRoom);
-
+    
     return(
         <React.Fragment>
         <div className={roomStyles.bookingForm}>
@@ -257,7 +257,7 @@ export default function IRoomBook (props:IRoomBookProps) {
                     className={disabledControl ? roomStyles.disabledCtrl : ''}
                     minDate={new Date()}
                 />
-                {((props.isPeriods && props.bookFormMode === 'New') || (props.bookFormMode !== 'New' && !isPeriodKeyEmpty )) &&
+                {((props.isPeriods && props.bookFormMode === 'New') || (props.bookFormMode !== 'New' && props.formField.isBookedByPeriods)) &&
                     <Dropdown 
                         placeholder="Select a period" 
                         label="Period" 
@@ -270,7 +270,7 @@ export default function IRoomBook (props:IRoomBookProps) {
                         className={disabledControl ? roomStyles.disabledCtrl : ''}
                     />     
                 }
-                {((!props.isPeriods && props.bookFormMode === 'New') || (props.bookFormMode !== 'New' && isPeriodKeyEmpty) ) &&
+                {((!props.isPeriods && props.bookFormMode === 'New') || (props.bookFormMode !== 'New' && !props.formField.isBookedByPeriods) ) &&
                     <>
                         <Stack horizontal tokens={stackTokens} styles={stackStyles}>
                             <ComboBox
