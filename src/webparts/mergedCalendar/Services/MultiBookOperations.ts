@@ -22,7 +22,7 @@ export const getAllPeriods = async (context: WebPartContext, periodsList: string
 };
 
 export const getSchoolCategory = (calUrl:string) => { // elementary or secondary
-    calUrl = "https://pdsb1.sharepoint.com/sites/Rooms/2132/"; // for testing
+    // calUrl = "https://pdsb1.sharepoint.com/sites/Rooms/1234/"; // for testing
     calUrl = calUrl.toLowerCase();
     let isDemo = calUrl.indexOf('/rooms/') === -1 ?  true : false;
     let schoolLoc : string;
@@ -265,7 +265,8 @@ export const addBookingXX = async (context: WebPartContext, roomsCalListName: st
 
 
 const addSPBooking = async (context: WebPartContext, roomsCalListName: string, formFields: any, roomInfo: any, graphID?:string) => {
-    
+    console.log("addSPBooking Fnc - formFields", formFields);
+
     const periodStartTime = formFields.periodField.start;
     const periodEndTime = formFields.periodField.end;
 
@@ -279,7 +280,7 @@ const addSPBooking = async (context: WebPartContext, roomsCalListName: string, f
         RoomNameId: roomInfo.Id,
         Location: roomInfo.Title,
         AddToMyCal: formFields.addToCalField,
-        GraphId: graphID
+        GraphID: graphID
     });
     const spOptions: ISPHttpClientOptions = {
         headers:{
@@ -289,6 +290,9 @@ const addSPBooking = async (context: WebPartContext, roomsCalListName: string, f
         },
         body: body
     };
+
+    console.log("addSPBooking --> body", body);
+
     const _data = await context.spHttpClient.post(restUrl, SPHttpClient.configurations.v1, spOptions);
     if(_data.ok){
         console.log('New SP Event is added!');
