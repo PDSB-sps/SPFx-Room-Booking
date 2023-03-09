@@ -148,12 +148,15 @@ export const isPeriodConflict = (period1, period2) => {
     const period1End = moment(period1.end).format('HHmm').toString();
     const period2Start = moment(period2.start).format('HHmm').toString();
     const period2End = moment(period2.end).format('HHmm').toString();
+    
     console.log("period1Start", "period1End", "period2Start", "period2End");
     console.log(period1Start, period1End, period2Start, period2End);
+    
+    if (period1End == period2Start || period2End == period1Start) return false;
     if (
-        period1Start > period2Start && period1Start < period2End ||
-        period1End > period2Start && period1End < period2End ||
-        period1Start < period2Start && period1End > period2End 
+        period1Start >= period2Start && period1Start <= period2End ||
+        period1End >= period2Start && period1End <= period2End ||
+        period1Start <= period2Start && period1End >= period2End 
      ){
         return true;
     }

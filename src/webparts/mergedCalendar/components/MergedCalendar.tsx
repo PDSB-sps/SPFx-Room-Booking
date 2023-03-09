@@ -468,14 +468,14 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
               };
               loadLatestCalendars(callback);
             });
-            /*
-            setErrorMsgField(prevState => {
-              return {
-                ...prevState,
-                ['startEndTimeFields'] : "YES CAN BOOK"
-              };
-            });
-            */
+            
+            // setErrorMsgField(prevState => {
+            //   return {
+            //     ...prevState,
+            //     ['startEndTimeFields'] : "YES CAN BOOK"
+            //   };
+            // });
+            
 
           }else{
             setErrorMsgField(prevState => {
