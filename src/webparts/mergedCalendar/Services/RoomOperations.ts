@@ -352,6 +352,8 @@ const addSPEvent = async (context: WebPartContext, roomsCalListName: string, for
 };
 const addGraphSPEvent = async (context: WebPartContext, roomsCalListName: string, formFields: any, roomInfo: any) => {
     
+    //console.log("addGraphEvent - context.pageContext.web.title", context.pageContext.web.title);
+
     let startTime: string, endTime: string;
     if (formFields.periodField.key == '' || formFields.periodField.key == undefined){
         startTime = parseCustomTimes(formFields.startTimeField.key);
@@ -380,7 +382,7 @@ const addGraphSPEvent = async (context: WebPartContext, roomsCalListName: string
             "timeZone": timeZone
         },
         "location": {
-            "displayName": roomInfo.Title + ' - ' + formFields.periodField.text
+            "displayName": context.pageContext.web.title + ' - ' + roomInfo.Title + ' - ' + formFields.periodField.text
         },
         "attendees" : formFields.attendees.map(attendee => {
             return {

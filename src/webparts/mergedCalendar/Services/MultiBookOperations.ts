@@ -319,7 +319,7 @@ const addGraphSPBooking = async (context: WebPartContext, roomsCalListName: stri
             "timeZone": "Eastern Standard Time"
         },
         "location": {
-            "displayName": roomInfo.Title + ' - ' + formFields.periodField.text
+            "displayName": context.pageContext.web.title + ' - ' + roomInfo.Title + ' - ' + formFields.periodField.text
         },
         "attendees" : formFields.attendees.map(attendee => {
             return {
