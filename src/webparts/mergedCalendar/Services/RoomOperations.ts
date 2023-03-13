@@ -283,18 +283,21 @@ export const updateEventXX = async (context: WebPartContext, roomsCalListName: s
 };
 
 export const validateTimes = (startTime: string, endTime: string) => {
-    const sameAMPM = (startTime.indexOf('AM') !== -1 && endTime.indexOf('AM') !== -1) || startTime.indexOf('PM') !== -1 && endTime.indexOf('PM') !== -1;
     const isStartAM = startTime.indexOf('AM') !== -1 ? true : false;
     const isEndAM = endTime.indexOf('AM') !== -1 ? true : false;
-    const startNum = Number(startTime.substring(0, startTime.indexOf(' ')).replace(':',''));
+    const startNum  = Number(startTime.substring(0, startTime.indexOf(' ')).replace(':',''));
     const endNum = Number(endTime.substring(0, endTime.indexOf(' ')).replace(':',''));
 
-    if (sameAMPM){ // if both AM or both PM
-        return startNum < endNum ;
-    }else{
-        if (!isStartAM && isEndAM) return false;
-        return true;
-    }
+    const start24 = isStartAM ? startNum : (Math.round(startNum/100) === 12 ? startNum :startNum + 1200) ;
+    const end24 = isEndAM ? endNum : (Math.round(endNum/100) === 12 ? endNum : endNum + 1200);
+    
+    // console.log("sameAMPM", sameAMPM);
+    // console.log("isStartAM", isStartAM);
+    // console.log("isEndAM", isEndAM);
+    // console.log("startNum", startNum);
+    // console.log("endNum", endNum);
+
+    return start24 < end24;
 };
 export const parseCustomTimes = (time: string) => {
     const isPM = time.indexOf('PM') === -1 ? false : true;
