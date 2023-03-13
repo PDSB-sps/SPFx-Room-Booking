@@ -327,7 +327,7 @@ export default function IRoomBook (props:IRoomBookProps) {
                         />
                         <p className={roomStyles.eventWarning}>
                             <Icon className={roomStyles.eventWarningIcon} iconName='Info'/> 
-                            <span>Only internal board users</span>
+                            <span>Only board employees</span>
                         </p>
                     </>
 
