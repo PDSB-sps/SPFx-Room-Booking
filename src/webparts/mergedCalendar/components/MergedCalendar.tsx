@@ -83,6 +83,7 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
   const [hideConfirmMultiDlg, { toggle: toggleConfirmMultiDlg }] = useBoolean(true);
   const [isMultiBookingDataLoading, { toggle: toggleIsMultiBookingDataLoading }] = useBoolean(false);
   const secSchoolRotary = 'School Rotary';
+  const [invitedAttendeesMulti, setInvitedAttendeesMulti] = React.useState([]);
 
   const ACTIONS = {
     EVENT_DETAILS_TOGGLE : "event-details-toggle",
@@ -649,7 +650,8 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
     roomField : {key: '', text:''},
     startDateField : new Date(),
     endDateField : new Date(),
-    addToCalField: false
+    addToCalField: false,
+    attendees: [],
   });
   //error handeling
   const [errorMsgFieldMultiBk , setErrorMsgFieldMultiBk] = React.useState({
@@ -683,7 +685,8 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
       roomField : {key: '', text:''},
       startDateField : new Date(),    
       endDateField : new Date(),    
-      addToCalField: false
+      addToCalField: false,
+      attendees: [],
     });
     resetErrorMsgFieldMultiBk();
   };
@@ -831,7 +834,8 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
           descpField: formFieldMultiBk.descpField,
           periodField: formFieldMultiBk.periodField,
           dateField: booking.start,
-          addToCalField:formFieldMultiBk.addToCalField
+          addToCalField:formFieldMultiBk.addToCalField,
+          attendees: formFieldMultiBk.attendees
         });
       }
       if (booking.overwrite && booking.conflict){
@@ -1115,6 +1119,7 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
           cancelMultiBook = {cancelBookingClickHandler}
           checkBookingClick = {checkBookingClickHandler}
           bookingsGridVisible = {mergedBookings.length > 0 ? true : false}
+          invitedAttendees = {invitedAttendeesMulti}
         />
 
         {isCheckBookingClicked && mergedBookings.length === 0 &&

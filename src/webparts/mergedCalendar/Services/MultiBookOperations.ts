@@ -22,7 +22,7 @@ export const getAllPeriods = async (context: WebPartContext, periodsList: string
 };
 
 export const getSchoolCategory = (calUrl:string) => { // elementary or secondary
-    //calUrl = "https://pdsb1.sharepoint.com/sites/Rooms/1234/"; // for testing
+    //calUrl = "https://pdsb1.sharepoint.com/sites/Rooms/2402/"; // for testing
     calUrl = calUrl.toLowerCase();
     let isDemo = calUrl.indexOf('/rooms/') === -1 ?  true : false;
     let schoolLoc : string;
@@ -321,6 +321,14 @@ const addGraphSPBooking = async (context: WebPartContext, roomsCalListName: stri
         "location": {
             "displayName": roomInfo.Title + ' - ' + formFields.periodField.text
         },
+        "attendees" : formFields.attendees.map(attendee => {
+            return {
+                "emailAddress":{
+                    "name": attendee.text,
+                    "address": attendee.secondaryText
+                }
+            };
+        })
     };
 
     const grapClient = await context.msGraphClientFactory.getClient();

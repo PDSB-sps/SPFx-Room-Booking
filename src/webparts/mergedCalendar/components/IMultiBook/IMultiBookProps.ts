@@ -17,4 +17,5 @@ export interface IMultiBookProps {
 
     context: WebPartContext;
     bookingsGridVisible: boolean;
+    invitedAttendees: string[];
 }

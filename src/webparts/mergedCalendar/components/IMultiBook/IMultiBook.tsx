@@ -1,12 +1,13 @@
 import * as React from 'react';
 import roomStyles from '../Room.module.scss';
 import styles from '../MergedCalendar.module.scss';
-
 import { IMultiBookProps } from './IMultiBookProps';
-import {Stack, IStackStyles, IStackProps, TextField, Dropdown, DatePicker, IDatePickerStrings, DayOfWeek, Toggle, PrimaryButton, DefaultButton} from '@fluentui/react';
+import {Stack, IStackStyles, IStackProps, TextField, Dropdown, DatePicker, IDatePickerStrings, DayOfWeek, Toggle, PrimaryButton, DefaultButton, IIconProps, initializeIcons, Icon} from '@fluentui/react';
+import { PeoplePicker, PrincipalType } from "@pnp/spfx-controls-react/lib/PeoplePicker";
 
 export default function IMultiBook(props: IMultiBookProps) {
 
+    initializeIcons();
     const stackTokens = { childrenGap: 10 };
     const stackStyles: Partial<IStackStyles> = { root: { width: '100%' } };
     const columnProps: Partial<IStackProps> = {
@@ -135,6 +136,28 @@ export default function IMultiBook(props: IMultiBookProps) {
                     checked={props.formField.addToCalField}
                     onChange={props.onChangeFormField('addToCalField')}
                 />
+                {props.formField.addToCalField &&
+                    <>
+                        <PeoplePicker
+                            context={props.context}
+                            titleText="Invite Attendees"
+                            groupName={''} // Leave this blank in case you want to filter from all users
+                            showtooltip={false}
+                            required={false}
+                            onChange={props.onChangeFormField('attendees')}
+                            showHiddenInUI={false}
+                            principalTypes={[PrincipalType.User, PrincipalType.SharePointGroup, PrincipalType.DistributionList, PrincipalType.SecurityGroup]}
+                            resolveDelay={1000} 
+                            personSelectionLimit={50}
+                            defaultSelectedUsers = {props.invitedAttendees}
+                        />
+                        <p className={roomStyles.eventWarning}>
+                            <Icon className={roomStyles.eventWarningIcon} iconName='Info'/> 
+                            <span>Only board employees</span>
+                        </p>
+                    </>
+
+                }
             </Stack>
         </div>
         <div>
