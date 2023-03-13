@@ -69,7 +69,7 @@ export default function IRoomsManage (props: IRoomsManageProps) {
             {/* <CommandBarButton iconProps={addIcon} text="Add Room" onClick={() => props.onRoomsManage(newRoomURL)} />
             <CommandBarButton iconProps={addIcon} text="Add Period" onClick={() => props.onRoomsManage(newPeriodURL)}/>
             <CommandBarButton iconProps={addIcon} text="Add Guidelines" onClick={() => props.onRoomsManage(newGuidelinesURL)}/> */}
-            {isUserManage ?
+            {isUserManage(props.context) ?
               <CommandBarButton className={roomStyles.siteManage} iconProps={{iconName: 'CalendarYear'}} text="Multiple Booking" onClick={props.openMultiBook} />
               :
               <Link className={roomStyles.siteManage} href={`${props.context.pageContext.web.serverRelativeUrl}/SitePages/Site-Management.aspx`}>

@@ -67,5 +67,5 @@ export const isUserManage = (context: WebPartContext) : boolean =>{
     const userPermissions = context.pageContext.web.permissions,
         permission = new SPPermission (userPermissions.value);
     
-    return permission.hasPermission(SPPermission.manageWeb);
+    return permission.hasPermission(SPPermission.deleteListItems);
 };
