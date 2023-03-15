@@ -128,37 +128,39 @@ export default function IMultiBook(props: IMultiBookProps) {
                     />   
                 </Stack>
             </Stack>
-            <Stack tokens={stackTokens}>
-                <Toggle 
-                    label="Add this event's booking to my Calendar" 
-                    onText="Yes" 
-                    offText="No" 
-                    checked={props.formField.addToCalField}
-                    onChange={props.onChangeFormField('addToCalField')}
-                />
-                {props.formField.addToCalField &&
-                    <>
-                        <PeoplePicker
-                            context={props.context}
-                            titleText="Invite Attendees"
-                            groupName={''} // Leave this blank in case you want to filter from all users
-                            showtooltip={false}
-                            required={false}
-                            onChange={props.onChangeFormField('attendees')}
-                            showHiddenInUI={false}
-                            principalTypes={[PrincipalType.User, PrincipalType.SharePointGroup, PrincipalType.DistributionList, PrincipalType.SecurityGroup]}
-                            resolveDelay={1000} 
-                            personSelectionLimit={50}
-                            defaultSelectedUsers = {props.invitedAttendees}
-                        />
-                        <p className={roomStyles.eventWarning}>
-                            <Icon className={roomStyles.eventWarningIcon} iconName='Info'/> 
-                            <span>Only board employees</span>
-                        </p>
-                    </>
+            {false &&
+                <Stack tokens={stackTokens}>
+                    <Toggle 
+                        label="Add this event's booking to my Calendar" 
+                        onText="Yes" 
+                        offText="No" 
+                        checked={props.formField.addToCalField}
+                        onChange={props.onChangeFormField('addToCalField')}
+                    />
+                    {props.formField.addToCalField &&
+                        <>
+                            <PeoplePicker
+                                context={props.context}
+                                titleText="Invite Attendees"
+                                groupName={''} // Leave this blank in case you want to filter from all users
+                                showtooltip={false}
+                                required={false}
+                                onChange={props.onChangeFormField('attendees')}
+                                showHiddenInUI={false}
+                                principalTypes={[PrincipalType.User, PrincipalType.SharePointGroup, PrincipalType.DistributionList, PrincipalType.SecurityGroup]}
+                                resolveDelay={1000} 
+                                personSelectionLimit={50}
+                                defaultSelectedUsers = {props.invitedAttendees}
+                            />
+                            <p className={roomStyles.eventWarning}>
+                                <Icon className={roomStyles.eventWarningIcon} iconName='Info'/> 
+                                <span>Only board employees</span>
+                            </p>
+                        </>
 
-                }
-            </Stack>
+                    }
+                </Stack>
+            }
         </div>
         <div>
             {!props.bookingsGridVisible ?
