@@ -997,7 +997,7 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
       </div>
       <MessageBar className={roomStyles.helpMsgBar} isMultiline={false}>
         Need help? 
-        <a href="https://pdsb1.sharepoint.com/ltss/classtech/rbs" target="_blank" data-interception="off">
+        <a href="https://pdsb1.sharepoint.com/sites/Rooms/SitePages/Home.aspx" target="_blank" data-interception="off">
           Visit our website.
         </a>
       </MessageBar>
