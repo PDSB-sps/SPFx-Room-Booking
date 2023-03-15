@@ -904,7 +904,7 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
                 onRoomsManage={onRoomsManage}
                 iframeState = {iFrameState.iFrameState}
                 openMultiBook = {multiBookPanelOpenHandler}
-                periods = {periods}
+                isPeriods = {props.isPeriods}
               />   
               <Dialog
                 hidden={!dialogState.dlgDelete}

@@ -8,5 +8,5 @@ export interface IRoomsManageProps{
     onRoomsManage: any;   
     iframeState: string; 
     openMultiBook: any;
-    periods: any;
+    isPeriods: any;
 }

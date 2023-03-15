@@ -61,6 +61,7 @@ export default function IRoomsManage (props: IRoomsManageProps) {
         // shouldFocusOnMount: false
       };
 
+
     return(
         <div className={roomStyles.roomsManage}>
             <hr/>
@@ -69,7 +70,7 @@ export default function IRoomsManage (props: IRoomsManageProps) {
             {/* <CommandBarButton iconProps={addIcon} text="Add Room" onClick={() => props.onRoomsManage(newRoomURL)} />
             <CommandBarButton iconProps={addIcon} text="Add Period" onClick={() => props.onRoomsManage(newPeriodURL)}/>
             <CommandBarButton iconProps={addIcon} text="Add Guidelines" onClick={() => props.onRoomsManage(newGuidelinesURL)}/> */}
-            {isUserManage(props.context) && props.periods.length !== 0 ?
+            {isUserManage(props.context) && props.isPeriods ?
               <CommandBarButton className={roomStyles.siteManage} iconProps={{iconName: 'CalendarYear'}} text="Multiple Booking" onClick={props.openMultiBook} />
               :
               <Link className={roomStyles.siteManage} href={`${props.context.pageContext.web.serverRelativeUrl}/SitePages/Site-Management.aspx`}>
