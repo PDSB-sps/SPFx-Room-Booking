@@ -163,15 +163,16 @@ export default function IMultiBook(props: IMultiBookProps) {
             }
         </div>
         <div>
-            {!props.bookingsGridVisible ?
+            {!props.bookingsGridVisible &&
                 <>
                     <PrimaryButton text="Check Bookings" onClick={props.checkBookingClick} className={styles.marginR10}/>
                     <DefaultButton text="Cancel" onClick={props.cancelMultiBook}  />
                 </>
-                :
-                <>
-                    <PrimaryButton iconProps={{iconName: 'Refresh'}} text="Reload Bookings" onClick={props.checkBookingClick} className={styles.marginR10}/>
-                </>
+                // :
+                // <>
+                //     {/* <PrimaryButton iconProps={{iconName: 'Refresh'}} text="Reload Bookings" onClick={props.checkBookingClick} className={styles.marginR10}/> */}
+                //     <PrimaryButton text="Check Bookings" onClick={props.checkBookingClick} className={styles.marginR10}/>
+                // </>
             }
             
         </div>
