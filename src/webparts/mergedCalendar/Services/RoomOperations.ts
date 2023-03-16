@@ -514,7 +514,7 @@ const updateGraphSPEvent = async (context: WebPartContext, roomsCalListName: str
             "timeZone": "Eastern Standard Time"
         },
         "location": {
-            "displayName": eventDetailsRoom.Room + ' - ' + formFields.periodField.text
+            "displayName": context.pageContext.web.title + ' - ' + eventDetailsRoom.Room + ' - ' + formFields.periodField.text
         },
         "attendees" : formFields.attendees.map(attendee => {
             return {
