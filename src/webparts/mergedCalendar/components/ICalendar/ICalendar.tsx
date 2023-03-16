@@ -33,7 +33,9 @@ export default function ICalendar(props:ICalendarProps){
     if (isUserManage(props.context)) rightButtons = props.listViewViews ? 'dayGridMonth,timeGridWeek,timeGridDay,listMonth settingsBtn' : '';
     else rightButtons = props.listViewViews ? 'dayGridMonth,timeGridWeek,timeGridDay' : '';
   }
-    
+
+  //console.log("props.eventSources", props.eventSources);  
+
     return(
         <div className={styles.calendarCntnr}>
           <FullCalendar 
@@ -98,7 +100,11 @@ export default function ICalendar(props:ICalendarProps){
               if (eventInfo.event._def.extendedProps.roomTitle){
                 return(
                   <div className="roomEvent">
+                  {eventInfo.event._def.extendedProps.period ?
                     <div>&nbsp;{eventInfo.event._def.extendedProps.roomTitle} - {eventInfo.event._def.extendedProps.period}</div>
+                    :
+                    <div>&nbsp;{eventInfo.event._def.extendedProps.roomTitle} - {eventInfo.timeText}</div>
+                  }
                     <div><i>&nbsp;{eventInfo.event.title}</i></div>
                   </div>
                 );
