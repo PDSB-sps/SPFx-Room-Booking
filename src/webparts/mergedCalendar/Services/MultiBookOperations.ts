@@ -193,7 +193,8 @@ export const mergeBookings = (existingBookings, multiBookings, multiBookingsFiel
                         conflictTitle : existingBooking.title,
                         conflictAuthor : existingBooking.author,
                         conflictId : existingBooking.id,
-                        GraphId: existingBooking.GraphId
+                        // GraphId: existingBooking.GraphId,
+                        GraphId: null
                     });
                 isConflictBool = true;
                 }
