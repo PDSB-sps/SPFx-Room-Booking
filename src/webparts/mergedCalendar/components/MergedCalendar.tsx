@@ -2,7 +2,7 @@ import * as React from 'react';
 import styles from './MergedCalendar.module.scss';
 import roomStyles from './Room.module.scss';
 import { IMergedCalendarProps } from './IMergedCalendarProps';
-import {IDropdownOption, DefaultButton, Panel, IComboBox, IComboBoxOption, MessageBar, MessageBarType, MessageBarButton, PanelType, Dialog, DialogFooter, DialogType} from '@fluentui/react';
+import {IDropdownOption, DefaultButton, Panel, IComboBox, IComboBoxOption, MessageBar, MessageBarType, MessageBarButton, PanelType, Dialog, DialogFooter, DialogType, Label} from '@fluentui/react';
 import {useBoolean} from '@fluentui/react-hooks';
 
 import {CalendarOperations} from '../Services/CalendarOperations';
@@ -84,6 +84,15 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
   const [isMultiBookingDataLoading, { toggle: toggleIsMultiBookingDataLoading }] = useBoolean(false);
   const secSchoolRotary = 'School Rotary';
   const [invitedAttendeesMulti, setInvitedAttendeesMulti] = React.useState([]);
+
+  let showErrors = true;
+  let showLegend = true;
+  let showRoomsLegend = true;
+  if (props.isListView){
+    showErrors = props.listViewErrors;
+    showLegend = props.listViewLegend;
+    showRoomsLegend = props.listViewRoomsLegend;
+  }
 
   const ACTIONS = {
     EVENT_DETAILS_TOGGLE : "event-details-toggle",
@@ -740,6 +749,10 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
   };
   const onChangeFormFieldMultiBk = (formFieldParam: string) =>{
     return (event: any, newValue?: any)=>{
+      if(mergedBookings.length !== 0) {
+        setMergedBookings([]);
+        setIsCheckBookingClicked(false);
+      }
       setFormFieldMultiBk(prevState => { 
         return{
           ...prevState,
@@ -881,71 +894,81 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
       />
 
       <div className={roomStyles.roomsCalendarCntnr}>
-        <div className={roomStyles.allRoomsCntnr}> 
-          {filteredRooms.length !== 0 ?
-              <IRoomDropdown 
-              onFilterChanged={onFilterChanged}
-              roomSelectedKey={roomSelectedKey}
-              locationGroup = {locationGroup}
-            />
-            :
-            <MessageBar messageBarType={MessageBarType.warning} isMultiline={true} >
-              There are no Rooms created yet. Please use the "Add" and "Edit" options below to manage your Rooms, Periods and Guidelines.
-            </MessageBar>
-          }
-
-          {isUserManage &&
-            <React.Fragment>
-              <IRoomsManage 
-                context={props.context}
-                roomsList={props.roomsList}
-                periodsList={props.periodsList}
-                guidelinesList={props.guidelinesList}
-                onRoomsManage={onRoomsManage}
-                iframeState = {iFrameState.iFrameState}
-                openMultiBook = {multiBookPanelOpenHandler}
-                isPeriods = {props.isPeriods}
-              />   
-              <Dialog
-                hidden={!dialogState.dlgDelete}
-                onDismiss={() => dialogDispatch({type: ACTIONS.ROOM_DELETE_TOGGLE})}
-                dialogContentProps={dialogContentProps}
-                modalProps={modelProps}>
-                <DialogFooter>
-                    <PrimaryButton onClick={() => onDeleteRoomClickHandler(roomLoadedId)} text="Yes" />
-                    <DefaultButton onClick={() => dialogDispatch({type: ACTIONS.ROOM_DELETE_TOGGLE})} text="No" />
-                </DialogFooter>
-              </Dialog>
-              <IFrameDialog 
-                url={iFrameState.iFrameUrl}
-                width={iFrameState.iFrameState === "Add" ? '40%' : '70%'}
-                height={'90%'}
-                hidden={!iFrameState.iFrameShow}
-                iframeOnLoad={(iframe) => onIFrameLoad(iframe)}
-                onDismiss={(event) => onIFrameDismiss(event)}
-                allowFullScreen = {true}
-                dialogContentProps={{
-                  type: DialogType.close,
-                  showCloseButton: true
-                }}
+        
+        {(props.isListView && props.listViewRoomsFilter || !props.isListView ) &&
+          <div className={roomStyles.allRoomsCntnr}> 
+            {filteredRooms.length !== 0 ?
+                <IRoomDropdown 
+                onFilterChanged={onFilterChanged}
+                roomSelectedKey={roomSelectedKey}
+                locationGroup = {locationGroup}
               />
-            </React.Fragment>
-          }
+              :
+              <MessageBar messageBarType={MessageBarType.warning} isMultiline={true} >
+                There are no Rooms created yet. Please use the "Add" and "Edit" options below to manage your Rooms, Periods and Guidelines.
+              </MessageBar>
+            }
 
-          {filteredRooms.length !==0 &&
-            <IRooms 
-              rooms={filteredRooms} 
-              onCheckAvailClick={() => onCheckAvailClick} 
-              onBookClick={()=> onBookClick}
-              onViewDetailsClick={()=>onViewDetailsClick}
-              onEditClick={() => onEditRoom}
-              onDeleteClick={() => onDeleteRoomClick}
-            />
-          }
-          
-        </div>
+            {isUserManage &&
+              <React.Fragment>
+                <IRoomsManage 
+                  context={props.context}
+                  roomsList={props.roomsList}
+                  periodsList={props.periodsList}
+                  guidelinesList={props.guidelinesList}
+                  onRoomsManage={onRoomsManage}
+                  iframeState = {iFrameState.iFrameState}
+                  openMultiBook = {multiBookPanelOpenHandler}
+                  isPeriods = {props.isPeriods}
+                />   
+                <Dialog
+                  hidden={!dialogState.dlgDelete}
+                  onDismiss={() => dialogDispatch({type: ACTIONS.ROOM_DELETE_TOGGLE})}
+                  dialogContentProps={dialogContentProps}
+                  modalProps={modelProps}>
+                  <DialogFooter>
+                      <PrimaryButton onClick={() => onDeleteRoomClickHandler(roomLoadedId)} text="Yes" />
+                      <DefaultButton onClick={() => dialogDispatch({type: ACTIONS.ROOM_DELETE_TOGGLE})} text="No" />
+                  </DialogFooter>
+                </Dialog>
+                <IFrameDialog 
+                  url={iFrameState.iFrameUrl}
+                  width={iFrameState.iFrameState === "Add" ? '40%' : '70%'}
+                  height={'90%'}
+                  hidden={!iFrameState.iFrameShow}
+                  iframeOnLoad={(iframe) => onIFrameLoad(iframe)}
+                  onDismiss={(event) => onIFrameDismiss(event)}
+                  allowFullScreen = {true}
+                  dialogContentProps={{
+                    type: DialogType.close,
+                    showCloseButton: true
+                  }}
+                />
+              </React.Fragment>
+            }
+
+            {filteredRooms.length !==0 &&
+              <IRooms 
+                rooms={filteredRooms} 
+                onCheckAvailClick={() => onCheckAvailClick} 
+                onBookClick={()=> onBookClick}
+                onViewDetailsClick={()=>onViewDetailsClick}
+                onEditClick={() => onEditRoom}
+                onDeleteClick={() => onDeleteRoomClick}
+              />
+            }
+            
+          </div>
+        }
 
         <div className={roomStyles.allCalendarCntnr}>
+
+          {props.isListView &&
+            <Label className={styles.wpTitle}>
+              {props.listViewTitle}
+            </Label>
+          }
+
         {isFiltered &&
           <div className={roomStyles.filterWarning}>
             <MessageBar 
@@ -961,12 +984,16 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
             </MessageBar>
           </div>
         }
-        <div className={`${styles.legendTop} ${styles.legendHz}`}>
-          <ILegend 
-            calSettings={calSettings} 
-            onLegendChkChange={onLegendChkChange}
-          />
-        </div>        
+        
+        {((props.isListView && showLegend) || !props.isListView )&&
+          <div className={`${styles.legendTop} ${styles.legendHz}`}>
+            <ILegend 
+              calSettings={calSettings} 
+              onLegendChkChange={onLegendChkChange}
+            />
+          </div>        
+        }
+        
         <ICalendar 
           // eventSources={filteredEventSources} 
           // eventSources={eventSources} 
@@ -976,14 +1003,23 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
           handleDateClick={handleDateClick}
           context={props.context}
           listGUID = {listGUID}
-          passCurrentDate = {passCurrentDate}/>
-
-        <ILegendRooms 
-          calSettings={calSettings} 
-          rooms={filteredRooms}
+          passCurrentDate = {passCurrentDate}
+          isListView = {props.isListView}
+          listViewType = {props.listViewType}
+          listViewNavBtns = {props.listViewNavBtns}
+          listViewMonthTitle = {props.listViewMonthTitle}
+          listViewViews = {props.listViewViews}
+          listViewHeight = {props.listViewHeight}
         />
 
-      {calMsgErrs.length > 0 &&
+        {((props.isListView && showRoomsLegend) || !props.isListView) &&
+          <ILegendRooms 
+            calSettings={calSettings} 
+            rooms={filteredRooms}
+          />
+        }
+
+      {(calMsgErrs.length > 0 && (!props.isListView || (showErrors && props.isListView))) &&
         <MessageBar className={styles.calErrsMsg} messageBarType={MessageBarType.warning}>
           Warning! Calendar Errors, please check
           <ul>
@@ -995,12 +1031,15 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
       }
       </div>
       </div>
-      <MessageBar className={roomStyles.helpMsgBar} isMultiline={false}>
-        Need help? 
-        <a href="https://pdsb1.sharepoint.com/sites/Rooms/SitePages/Home.aspx" target="_blank" data-interception="off">
-          Visit our website.
-        </a>
-      </MessageBar>
+
+      {!props.isListView &&
+        <MessageBar className={roomStyles.helpMsgBar} isMultiline={false}>
+          Need help? 
+          <a href="https://pdsb1.sharepoint.com/sites/Rooms/SitePages/Home.aspx" target="_blank" data-interception="off">
+            Visit our website.
+          </a>
+        </MessageBar>
+      }   
 
       <IPanel
         dpdOptions={props.dpdOptions} 
@@ -1058,6 +1097,7 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
           <DefaultButton className={styles.marginL10} onClick={dismissPanelDetails} text="Cancel" />
         </div>
       </Panel>
+
       <Panel
         isOpen={isOpenBook}
         className={roomStyles.roomBookPanel}

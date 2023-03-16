@@ -27,7 +27,17 @@
       "roomsList" : "Rooms",
       "periodsList" : "Periods",
       "guidelinesList" : "Guidelines",
-      "isPeriods": true
+      "isPeriods": true,
+      "isListView": false,
+      "listViewMonthTitle": false,
+      "listViewType": "listWeek",
+      "listViewNavBtns": false,
+      "listViewLegend": false,
+      "listViewErrors": false,
+      "listViewViews": false,
+      "listViewTitle": "Upcoming Bookings",
+      "listViewRoomsFilter": false,
+      "listViewRoomsLegend": false
     }
   }]
 }

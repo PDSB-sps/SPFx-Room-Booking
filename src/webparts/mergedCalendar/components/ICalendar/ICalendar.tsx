@@ -2,6 +2,7 @@ import * as React from 'react';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
+import listPlugin from '@fullcalendar/list';
 import interactionPlugin from '@fullcalendar/interaction';
 import rrulePlugin from '@fullcalendar/rrule';
 
@@ -22,19 +23,31 @@ export default function ICalendar(props:ICalendarProps){
     let calendarApi = calendarRef.current.getApi();
     calendarApi.prev();
   };
+
+  let leftHdrButtons = 'customPrev,customNext today';
+  let centerButtons = 'title';
+  let rightButtons = isUserManage(props.context) ? 'dayGridMonth,timeGridWeek,timeGridDay,listMonth settingsBtn' : 'dayGridMonth,timeGridWeek,timeGridDay,listMonth';
+  if (props.isListView){
+    leftHdrButtons = props.listViewNavBtns ? 'customPrev,customNext today' : '' ;
+    centerButtons = props.listViewMonthTitle ? 'title' : '';
+    if (isUserManage(props.context)) rightButtons = props.listViewViews ? 'dayGridMonth,timeGridWeek,timeGridDay,listMonth settingsBtn' : '';
+    else rightButtons = props.listViewViews ? 'dayGridMonth,timeGridWeek,timeGridDay' : '';
+  }
     
     return(
         <div className={styles.calendarCntnr}>
           <FullCalendar 
             ref={calendarRef}
+            contentHeight = {props.isListView ? props.listViewHeight : 'auto'}
             plugins = {
-              [dayGridPlugin, timeGridPlugin, interactionPlugin, rrulePlugin]
+              [dayGridPlugin, timeGridPlugin, interactionPlugin, rrulePlugin, listPlugin]
             }
             headerToolbar = {{
-              //left: 'prev,next today',
-              left: 'customPrev,customNext today',
-              center: 'title',
-              right: isUserManage(props.context) ? 'dayGridMonth,timeGridWeek,timeGridDay settingsBtn' : 'dayGridMonth,timeGridWeek,timeGridDay' 
+              // left: 'prev,next today customPrev customNext',
+              left: leftHdrButtons,
+              center: centerButtons,
+              //right: isUserManage(props.context) ? 'dayGridMonth,timeGridWeek,timeGridDay settingsBtn addEventBtn' : 'dayGridMonth,timeGridWeek,timeGridDay addEventBtn' 
+              right: rightButtons 
             }}
             customButtons = {{
               settingsBtn : {
@@ -70,7 +83,7 @@ export default function ICalendar(props:ICalendarProps){
               minute: '2-digit',
               meridiem: 'short'
             }}
-            initialView='dayGridMonth'   
+            initialView = {props.isListView ? props.listViewType : 'dayGridMonth'}    
             eventClassNames={styles.eventItem}           
             editable={false}
             selectable={true}
@@ -81,7 +94,6 @@ export default function ICalendar(props:ICalendarProps){
             weekends={props.showWeekends}
             eventClick={props.handleDateClick}
             eventSources = {props.eventSources}
-            contentHeight='auto'
             eventContent = {(eventInfo)=>{
               if (eventInfo.event._def.extendedProps.roomTitle){
                 return(

@@ -12,4 +12,16 @@ export interface IMergedCalendarProps {
   guidelinesList: string;
 
   isPeriods: boolean;
+
+  isListView: boolean;
+  listViewType: any;
+  listViewNavBtns: boolean;
+  listViewLegend: boolean;
+  listViewErrors: boolean;
+  listViewMonthTitle: boolean;
+  listViewViews: boolean;
+  listViewHeight: number;
+  listViewTitle: string;
+  listViewRoomsFilter: boolean;
+  listViewRoomsLegend: boolean;
 }
