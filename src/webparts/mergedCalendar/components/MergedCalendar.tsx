@@ -897,19 +897,14 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
         
         {(props.isListView && props.listViewRoomsFilter || !props.isListView ) &&
           <div className={roomStyles.allRoomsCntnr}> 
-            {filteredRooms.length !== 0 ?
-                <IRoomDropdown 
-                onFilterChanged={onFilterChanged}
-                roomSelectedKey={roomSelectedKey}
-                locationGroup = {locationGroup}
-              />
-              :
-              <MessageBar messageBarType={MessageBarType.warning} isMultiline={true} >
-                There are no Rooms created yet. Please use the "Add" and "Edit" options below to manage your Rooms, Periods and Guidelines.
-              </MessageBar>
-            }
+            
+            <IRoomDropdown 
+              onFilterChanged={onFilterChanged}
+              roomSelectedKey={roomSelectedKey}
+              locationGroup = {locationGroup}
+            />
 
-            {isUserManage &&
+            {isUserManage(props.context) &&
               <React.Fragment>
                 <IRoomsManage 
                   context={props.context}
@@ -947,7 +942,7 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
               </React.Fragment>
             }
 
-            {filteredRooms.length !==0 &&
+            {filteredRooms.length !==0 ?
               <IRooms 
                 rooms={filteredRooms} 
                 onCheckAvailClick={() => onCheckAvailClick} 
@@ -956,6 +951,10 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
                 onEditClick={() => onEditRoom}
                 onDeleteClick={() => onDeleteRoomClick}
               />
+              :
+              <MessageBar messageBarType={MessageBarType.warning} isMultiline={true} >
+                There are no Rooms created yet. Please use the "Add" and "Edit" options below to manage your Rooms, Periods and Guidelines.
+              </MessageBar>
             }
             
           </div>
@@ -1088,7 +1087,7 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
         </Dialog>
 
         <div className={styles.panelBtns}>
-          {isUserManage &&
+          {isUserManage(props.context) &&
             <React.Fragment>
               <PrimaryButton className={styles.marginL10} onClick={() => onEditRoom(roomInfo.Id)} text="Edit" />
               <PrimaryButton className={styles.marginL10} onClick={() => dialogDispatch({type: ACTIONS.ROOM_DELETE_TOGGLE})} text="Delete" />
