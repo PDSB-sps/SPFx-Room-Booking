@@ -437,7 +437,7 @@ const deleteGraphItem = async (context: WebPartContext, itemId: any) => {
 export const deleteItem = async (context: WebPartContext, listName: string, itemID: string, itemDetails?: any) => {
     console.log("itemDetails", itemDetails);
     const spDeleteResp = await deleteSPItem(context, listName, itemID);
-    const grphDeleteResp = itemDetails.GraphId ? await deleteGraphItem(context, itemDetails.GraphId) : null;
+    const grphDeleteResp = itemDetails && (itemDetails.GraphId ? await deleteGraphItem(context, itemDetails.GraphId) : null);
     return Promise.all([spDeleteResp, grphDeleteResp]);
 };
 
