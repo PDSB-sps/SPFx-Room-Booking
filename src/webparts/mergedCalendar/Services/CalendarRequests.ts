@@ -10,13 +10,13 @@ const resolveCalUrl = (context: WebPartContext, calType:string, calUrl:string, c
     
     let resolvedCalUrl:string;
     let restApiUrl :string = "/_api/web/lists/getByTitle('"+calName+"')/items";
-    let restApiParams :string = `?$select=ID,Title,EventDate,EndDate,Location,Description,fAllDayEvent,fRecurrence,RecurrenceData,Category&$top=1000&$orderby=EndDate desc`;
-    let restApiParamsRoom: string = "?$select=ID,Title,EventDate,EndDate,Location,Description,fAllDayEvent,fRecurrence,RecurrenceData,Status,AddToMyCal,RoomName/ColorCalculated,RoomName/ID,RoomName/Title,Periods/ID,Periods/EndTime,Periods/Title,Periods/StartTime&$expand=RoomName,Periods&$orderby=EventDate desc&$top=1000";
+    let restApiParams :string = `?$select=ID,Title,EventDate,EndDate,Created,Author/Title,Author/EMail,Location,Description,fAllDayEvent,fRecurrence,RecurrenceData,Category&$top=1000&$orderby=EndDate desc`;
+    let restApiParamsRoom: string = "?$select=ID,Title,EventDate,EndDate,Created,Author/Title,Author/EMail,Location,Description,fAllDayEvent,fRecurrence,RecurrenceData,Status,AddToMyCal,RoomName/ColorCalculated,RoomName/ID,RoomName/Title,Periods/ID,Periods/EndTime,Periods/Title,Periods/StartTime&$expand=RoomName,Periods,Author&$orderby=EventDate desc&$top=1000";
 
     const {dateRangeStart, dateRangeEnd} = getDatesWindow(currentDate);
 
-    let restApiParamsWRange :string = `?$select=ID,Title,EventDate,EndDate,Location,Description,fAllDayEvent,fRecurrence,RecurrenceData,Category&$top=1000&$orderby=EndDate desc&$filter=fRecurrence eq 1 or EventDate ge '${dateRangeStart.toISOString()}' and EventDate le '${dateRangeEnd.toISOString()}'`;
-    let restApiParamsRoomWRange: string = `?$select=ID,Title,EventDate,EndDate,Location,Description,fAllDayEvent,fRecurrence,RecurrenceData,Status,AddToMyCal,GraphID,RoomName/ColorCalculated,RoomName/ID,RoomName/Title,Periods/ID,Periods/EndTime,Periods/Title,Periods/StartTime&$expand=RoomName,Periods&$orderby=EventDate desc&$top=1000&$filter=fRecurrence eq 1 or EventDate ge '${dateRangeStart.toISOString()}' and EventDate le '${dateRangeEnd.toISOString()}'`;
+    let restApiParamsWRange :string = `?$select=ID,Title,EventDate,EndDate,Created,Author/Title,Author/EMail,Location,Description,fAllDayEvent,fRecurrence,RecurrenceData,Category&$top=1000&$orderby=EndDate desc&$filter=fRecurrence eq 1 or EventDate ge '${dateRangeStart.toISOString()}' and EventDate le '${dateRangeEnd.toISOString()}'`;
+    let restApiParamsRoomWRange: string = `?$select=ID,Title,EventDate,EndDate,Created,Author/Title,Author/EMail,Location,Description,fAllDayEvent,fRecurrence,RecurrenceData,Status,AddToMyCal,GraphID,RoomName/ColorCalculated,RoomName/ID,RoomName/Title,Periods/ID,Periods/EndTime,Periods/Title,Periods/StartTime&$expand=RoomName,Periods,Author&$orderby=EventDate desc&$top=1000&$filter=fRecurrence eq 1 or EventDate ge '${dateRangeStart.toISOString()}' and EventDate le '${dateRangeEnd.toISOString()}'`;
     
     restApiParams = restApiParamsWRange;
     restApiParamsRoom = restApiParamsRoomWRange;
@@ -184,7 +184,7 @@ export const getRoomsCal = async (context: WebPartContext, calSettings:{CalType:
             
         if (_data.ok){
             const calResult = await _data.json();
-            // console.log("calResult", calResult);
+            console.log("calResult--------", calResult);
             if(calResult){
                 calResult.d.results.map((result:any)=>{
                     calEvents.push({
@@ -206,7 +206,10 @@ export const getRoomsCal = async (context: WebPartContext, calSettings:{CalType:
                         period: result.Periods.Title,
                         periodId: result.Periods.ID,
                         addToCal: result.AddToMyCal,
-                        GraphId: result.GraphID
+                        GraphId: result.GraphID,
+                        CreatedDate: result.Created,
+                        AuthorName: result.Author.Title,
+                        AuthorEmail: result.Author.EMail
                     });
                 });
             }

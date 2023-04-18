@@ -189,7 +189,8 @@ export default function IRoomBook (props:IRoomBookProps) {
     // console.log("props.formField.endTimeField.key", props.formField.endTimeField.key);
     // console.log("props.roomInfo", props.roomInfo);
     // console.log("props.eventDetailsRoom", props.eventDetailsRoom);
-    
+    console.log("props IRoomBook", props);
+
     return(
         <React.Fragment>
         <div className={roomStyles.bookingForm}>
@@ -362,6 +363,11 @@ export default function IRoomBook (props:IRoomBookProps) {
                 <PrimaryButton text="Update" onClick={() => props.onUpdateBookingClick(props.eventDetailsRoom)} className={styles.marginR10}/>
             }
             <DefaultButton text="Cancel" onClick={props.dismissPanelBook}  />
+
+            {props.bookFormMode !== "New" &&
+                <div className={roomStyles.createdSection}>Created at {props.eventDetailsRoom.CreatedDate} by <a data-interception='off' target='_blank' href={`https://can.delve.office.com/?v=work&p=${props.eventDetailsRoom.AuthorEmail}`}>{props.eventDetailsRoom.AuthorName}</a></div>
+            }
+
         </div>
         </React.Fragment>
     );
