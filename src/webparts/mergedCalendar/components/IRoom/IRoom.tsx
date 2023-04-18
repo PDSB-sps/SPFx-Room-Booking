@@ -31,7 +31,7 @@ export default function IRoom (props:IRoomProps) {
                     </div>
                 </div>
             </div>
-            {isUserManage &&
+            {isUserManage(props.context) &&
                 <div className={styles.roomControls}>
                     <ActionButton title="Edit" iconProps={editIcon} onClick={() => props.onEditClick(props.roomInfo.Id)}></ActionButton>
                     <ActionButton title="Delete" iconProps={deleteIcon} onClick={() => props.onDeleteClick(props.roomInfo.Id)}></ActionButton>

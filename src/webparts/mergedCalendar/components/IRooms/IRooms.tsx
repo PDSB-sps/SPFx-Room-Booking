@@ -14,6 +14,7 @@ export default function IRooms (props:IRoomsProps) {
                     onBookClick = {props.onBookClick(room)}
                     onEditClick={props.onEditClick(room.Id)}
                     onDeleteClick={props.onDeleteClick(room.Id)}
+                    context={props.context}
                 />
             );
         })

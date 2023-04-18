@@ -950,6 +950,7 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
                 onViewDetailsClick={()=>onViewDetailsClick}
                 onEditClick={() => onEditRoom}
                 onDeleteClick={() => onDeleteRoomClick}
+                context={props.context}
               />
               :
               <MessageBar messageBarType={MessageBarType.warning} isMultiline={true} >
