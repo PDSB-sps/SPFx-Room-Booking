@@ -54,6 +54,10 @@ spfx-room-booking
 spfx-room-booking-testing
 00f6c2d2-68b5-4e6e-ba23-03566cedad3d
 
+# Room Booking Testing Fixes version
+spfx-room-booking-testing-fixes
+bed30cda-1d36-4139-9dbb-83345be28cbe
+
 # Room Bl=ooking Testing 2 version XXXX
 spfx-room-booking-testing2
 f4ad47d0-58ba-43b9-b87c-31723d6f1d03
