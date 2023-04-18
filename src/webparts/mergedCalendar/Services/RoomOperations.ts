@@ -300,10 +300,14 @@ export const validateTimes = (startTime: string, endTime: string) => {
     return start24 < end24;
 };
 export const parseCustomTimes = (time: string) => {
-    const isPM = time.indexOf('PM') === -1 ? false : true;
-    const timeArr = time.substring(0,time.indexOf(' ')).split(':');
+    //const isPM = time.indexOf('PM') === -1 ? false : true;
+    //const timeArr = time.substring(0,time.indexOf(' ')).split(':');
+
+    const time24 = moment(time, 'hh:mm A').format('HH:mm');
+    const timeArr = time24.split(':');
+    
     let formattedDate = new Date();
-    formattedDate.setHours(isPM ? Number(timeArr[0]) + 12 : Number(timeArr[0]));
+    formattedDate.setHours(Number(timeArr[0]));
     formattedDate.setMinutes(Number(timeArr[1]));
     formattedDate.setSeconds(0);
     return formattedDate.toString();
@@ -354,13 +358,15 @@ const addGraphSPEvent = async (context: WebPartContext, roomsCalListName: string
     
     //console.log("addGraphEvent - context.pageContext.web.title", context.pageContext.web.title);
 
-    let startTime: string, endTime: string;
+    let startTime: string, endTime: string, periodName: string;
     if (formFields.periodField.key == '' || formFields.periodField.key == undefined){
         startTime = parseCustomTimes(formFields.startTimeField.key);
         endTime = parseCustomTimes(formFields.endTimeField.key);
+        periodName = '';
     }else{
         startTime = formFields.periodField.start;
         endTime = formFields.periodField.end;
+        periodName = ' - ' + formFields.periodField.text;
     }
     const chosenDate = getChosenDate(startTime, endTime, formFields.dateField);
     const timeZone = "Eastern Standard Time";
@@ -382,7 +388,7 @@ const addGraphSPEvent = async (context: WebPartContext, roomsCalListName: string
             "timeZone": timeZone
         },
         "location": {
-            "displayName": context.pageContext.web.title + ' - ' + roomInfo.Title + ' - ' + formFields.periodField.text
+            "displayName": context.pageContext.web.title + ' - ' + roomInfo.Title + periodName
         },
         "attendees" : formFields.attendees.map(attendee => {
             return {
@@ -489,13 +495,15 @@ const updateSPEvent = async (context: WebPartContext, roomsCalListName: string, 
 };
 const updateGraphSPEvent = async (context: WebPartContext, roomsCalListName: string, itemDetails: any, formFields: any, eventDetailsRoom: any) => {
     console.log("updateGraphSPEvent -- itemDetails", itemDetails);
-    let startTime: string, endTime: string;
+    let startTime: string, endTime: string, periodName: string;
     if (formFields.periodField.key == '' || formFields.periodField.key == undefined){
         startTime = parseCustomTimes(formFields.startTimeField.key);
         endTime = parseCustomTimes(formFields.endTimeField.key);
+        periodName = '';
     }else{
         startTime = formFields.periodField.start;
         endTime = formFields.periodField.end;
+        periodName = ' - ' + formFields.periodField.text;
     }
     const chosenDate = getChosenDate(startTime, endTime, formFields.dateField);
 
@@ -514,7 +522,7 @@ const updateGraphSPEvent = async (context: WebPartContext, roomsCalListName: str
             "timeZone": "Eastern Standard Time"
         },
         "location": {
-            "displayName": context.pageContext.web.title + ' - ' + eventDetailsRoom.Room + ' - ' + formFields.periodField.text
+            "displayName": context.pageContext.web.title + ' - ' + eventDetailsRoom.Room + periodName,
         },
         "attendees" : formFields.attendees.map(attendee => {
             return {
@@ -588,5 +596,5 @@ export const isUserManage = (context: WebPartContext) : boolean =>{
     const userPermissions = context.pageContext.web.permissions,
         permission = new SPPermission (userPermissions.value);
     
-    return permission.hasPermission(SPPermission.manageWeb);
+    return permission.hasPermission(SPPermission.editListItems);
 };
