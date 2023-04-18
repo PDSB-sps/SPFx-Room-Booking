@@ -212,7 +212,7 @@ export default function IRoomBook (props:IRoomBookProps) {
                         <PrimaryButton className={roomStyles.editBtn} iconProps={checkIcon} title="Update Booking" ariaLabel="Update Booking" onClick={() => props.onUpdateBookingClick(props.eventDetailsRoom)} />
                     </div>
                 }
-                {props.bookFormMode === "View" && ( props.isCreator || isUserManage ) &&
+                {props.bookFormMode === "View" && ( props.isCreator || isUserManage(props.context) ) &&
                     <div className={roomStyles.editDeleteBtns}>
                         <PrimaryButton className={roomStyles.editBtn} iconProps={editIcon} title="Edit Booking" ariaLabel="Edit Booking" onClick={props.onEditBookingClick} />
                         <PrimaryButton className={roomStyles.deleteBtn} iconProps={deleteIcon} title="Delete Booking" ariaLabel="Delete Booking" onClick={toggleHideDialog} />
