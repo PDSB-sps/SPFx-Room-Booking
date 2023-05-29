@@ -50,12 +50,12 @@ A SPFx Merged Calendar React web-part. Aggregates different types of calendars; 
 spfx-room-booking
 84fd9f85-a309-4b1e-98fd-db8ae45e1323
 
-# Room Booking Testing version
+# Room Booking Testing version (only mine for working)
 spfx-room-booking-testing
 00f6c2d2-68b5-4e6e-ba23-03566cedad3d
 
-# Room Booking Testing Fixes version
-spfx-room-booking-testing-fixes
+# Room Booking Testing Fixes version (used to have a demo for the client)
+spfx-room-booking-demo
 bed30cda-1d36-4139-9dbb-83345be28cbe
 
 # Room Bl=ooking Testing 2 version XXXX
