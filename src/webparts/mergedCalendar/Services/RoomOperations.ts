@@ -3,6 +3,7 @@ import { SPPermission } from "@microsoft/sp-page-context";
 import {SPHttpClient, ISPHttpClientOptions, MSGraphClient} from "@microsoft/sp-http";
 import * as moment from 'moment';
 import {isPeriodConflict} from './MultiBookOperations';
+import {getDatesWindow} from '../Services/EventFormat';
 
 export const getRooms = async (context: WebPartContext, roomsList: string) =>{
     console.log("Get Rooms Function");
@@ -90,12 +91,16 @@ const adjustPeriods = (arr: [], disabledPeriods: any): {}[] =>{
     return updatePeriods(arrAdj);
     //return arrAdj;
 };
-export const getPeriods = async (context: WebPartContext, periodsList: string, roomId: any, bookingDate: any, selectedPeriod?: any) =>{
+export const getPeriods = async (context: WebPartContext, periodsList: string, roomId: any, bookingDate: any, currentDate: string, selectedPeriod?: any) =>{
+    //EventDate ge '${dateRangeStart.toISOString()}' and EventDate le '${dateRangeEnd.toISOString()}'
+
+    const {dateRangeStart, dateRangeEnd} = getDatesWindow(currentDate);
+
     console.log("Get Periods Function");
     const restUrl = context.pageContext.web.absoluteUrl + `/_api/web/lists/getByTitle('${periodsList}')/items?$orderBy=SortOrder asc`;
     const results = await context.spHttpClient.get(restUrl, SPHttpClient.configurations.v1).then(response => response.json());
 
-    const restUrlEvents = context.pageContext.web.absoluteUrl + `/_api/web/lists/getByTitle('Events')/items?$filter=RoomNameId eq '${roomId}'&$top=600`;
+    const restUrlEvents = context.pageContext.web.absoluteUrl + `/_api/web/lists/getByTitle('Events')/items?$filter=RoomNameId eq '${roomId}' and EventDate ge '${dateRangeStart.toISOString()}' and EventDate le '${dateRangeEnd.toISOString()}'&$top=600`;
     const resultsEvents = await context.spHttpClient.get(restUrlEvents, SPHttpClient.configurations.v1).then(response => response.json());
     
     let bookedPeriods : any = [];

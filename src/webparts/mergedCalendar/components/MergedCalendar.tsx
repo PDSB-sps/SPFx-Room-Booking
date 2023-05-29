@@ -301,7 +301,7 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
         setFormField((prevState)=>{
           return {...prevState, periodField : {key: '', text:'', start:new Date(), end:new Date()}};
         });
-        getPeriods(props.context, periodsList, calculatedRoomId , event, null).then((results)=>{
+        getPeriods(props.context, periodsList, calculatedRoomId , event, currentCalDate, null).then((results)=>{
           setPeriods(results);
         });
       }
@@ -334,7 +334,7 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
       getGuidelines(props.context, guidelinesList).then((results)=>{
         setGuidelines(results);
       });
-      getPeriods(props.context, periodsList, evDetails.RoomId, new Date(evDetails.Start), evDetails.PeriodId).then((results)=>{
+      getPeriods(props.context, periodsList, evDetails.RoomId, new Date(evDetails.Start), currentCalDate, evDetails.PeriodId).then((results)=>{
         setPeriods(results);
       });
       getRoomInfo(props.context, roomsList, arg.event._def.extendedProps.roomId).then(results => setRoomInfo(results));
@@ -428,8 +428,9 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
     openPanelDetails();
   };
   const onBookClick = (bookingInfoParam: any) =>{
+    console.log("onBookClick");
     setBookFormMode('New');
-    getPeriods(props.context, periodsList, bookingInfoParam.roomInfo.Id, formField.dateField).then((results)=>{
+    getPeriods(props.context, periodsList, bookingInfoParam.roomInfo.Id, formField.dateField, currentCalDate).then((results)=>{
       setPeriods(results);
     });
     getGuidelines(props.context, guidelinesList).then((results)=>{
@@ -444,9 +445,8 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
   //when clicking on the book button in the panel
   const onNewBookingClickHandler = ()=>{
     handleError(()=>{
-      
       if (props.isPeriods){
-        getPeriods(props.context, periodsList, roomInfo.Id, formField.dateField).then((results: any)=>{
+        getPeriods(props.context, periodsList, roomInfo.Id, formField.dateField, currentCalDate).then((results: any)=>{
           setPeriods(results);
           
           let seletedPeriod = results.filter(item => item.key === formField.periodField.key);
@@ -519,7 +519,7 @@ export default function MergedCalendar (props:IMergedCalendarProps) {
   };
   const onUpdateBookingClickHandler = (eventDetailsParam: any) =>{
     if (props.isPeriods){
-      getPeriods(props.context, periodsList, eventDetailsRoom.RoomId, formField.dateField, eventDetailsRoom.PeriodId).then((results: any)=>{
+      getPeriods(props.context, periodsList, eventDetailsRoom.RoomId, formField.dateField, currentCalDate, eventDetailsRoom.PeriodId).then((results: any)=>{
         setPeriods(results);
         
         let seletedPeriod = results.filter(item => item.key === formField.periodField.key);
