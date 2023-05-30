@@ -36,6 +36,10 @@ import * as moment from 'moment';
 
 
 export default function MergedCalendar (props:IMergedCalendarProps) {
+
+  //console.log("props.isPeriods b4", props.isPeriods);
+  props.isPeriods = props.isPeriods !== undefined ? props.isPeriods : true;
+  //console.log("props.isPeriods after", props.isPeriods);
   
   // Calendar states & Event details states
   const _calendarOps = new CalendarOperations();

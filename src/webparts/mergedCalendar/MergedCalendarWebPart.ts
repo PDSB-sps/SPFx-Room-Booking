@@ -191,9 +191,9 @@ export default class MergedCalendarWebPart extends BaseClientSideWebPart<IMerged
                 }),
                 PropertyPaneToggle('isPeriods', {
                   label: 'Use School Periods',
-                  checked: this.properties.isPeriods,
+                  checked: this.properties.isPeriods !== undefined ? this.properties.isPeriods : true,
                   onText: 'Yes',
-                  offText: 'No'
+                  offText: 'No',
                 }),
                 PropertyPaneDropdown('periodsList', {
                   label : 'Periods List',
